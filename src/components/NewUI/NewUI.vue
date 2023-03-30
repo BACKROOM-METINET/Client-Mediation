@@ -44,6 +44,8 @@ onMounted(async () => {
 	// mediation(videoElement, canvasElement, canvas)
 	const core = await mediation(videoElement, canvasElement, canvas)
 	core.startHolistic()
+	// main()
+	// comlink()
 })
 </script>
 

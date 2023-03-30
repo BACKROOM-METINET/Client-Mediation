@@ -7,12 +7,15 @@ import {
 	type Engine as EngineType,
 	type Scene as SceneType,
 } from '@babylonjs/core'
+import type { Results } from '@mediapipe/holistic'
+import type * as Comlink from 'comlink'
 import { defineStore } from 'pinia'
 import { ref, computed, toRefs } from 'vue'
 import { Hand } from '@/client/class/hands'
 import { getMaterial } from '@/client/helpers/materials'
 import { getMesh, loadMesh } from '@/client/helpers/mesh'
 import type { Avatar } from '@/client/types/business'
+import type { Pose } from '@/client/workers/pose-processing'
 import { useCameraStore } from './camera'
 
 export const useSceneStore = defineStore('scene', () => {
@@ -50,7 +53,7 @@ export const useSceneStore = defineStore('scene', () => {
 		)
 	}
 
-	function render(canvas: HTMLCanvasElement) {
+	function render(canvas: HTMLCanvasElement, remote: Comlink.Remote<Pose>) {
 		engine.value = new Engine(canvas, true)
 
 		const createScene = function () {
@@ -118,12 +121,34 @@ export const useSceneStore = defineStore('scene', () => {
 			return sceneRef.value
 		}
 		const sceneToRender = createScene()
-		engine.value?.runRenderLoop(function () {
+		engine.value?.runRenderLoop(async () => {
+			const cameraRotation = await remote.cameraRotation
+			if (cameraRef.value) {
+				cameraRef.value.rotation.x = cameraRotation.x
+				cameraRef.value.rotation.y = cameraRotation.y
+			}
 			sceneToRender?.render()
 		})
 		window.addEventListener('resize', function () {
 			engine.value?.resize()
 		})
+	}
+
+	function onHolisticResult(results: Results) {
+		// if (cameraRef.value) {
+		// 	if (results.leftHandLandmarks) {
+		// 		avatarRef.value?.hands.left.updateEvent(
+		// 			cameraRef.value as Camera,
+		// 			results.leftHandLandmarks
+		// 		)
+		// 	}
+		// 	if (results.rightHandLandmarks) {
+		// 		avatarRef.value?.hands.right.updateEvent(
+		// 			cameraRef.value as Camera,
+		// 			results.rightHandLandmarks
+		// 		)
+		// 	}
+		// }
 	}
 
 	return {
@@ -133,5 +158,6 @@ export const useSceneStore = defineStore('scene', () => {
 		membersNumberRef,
 		fpsCounter,
 		render,
+		onHolisticResult,
 	}
 })

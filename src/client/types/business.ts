@@ -1,5 +1,6 @@
 import type * as BABYLON from '@babylonjs/core'
 import type { Hand } from '../class/hands'
+import type { Results } from '@mediapipe/holistic'
 export interface Coordinate {
 	x: number
 	y: number
@@ -17,6 +18,9 @@ export interface MediapipeResult {
 	segmentationMask: ImageBitmap
 	za: Coordinate[]
 }
+
+export interface CloneableResults
+	extends Omit<Results, 'segmentationMask' | 'image'> {}
 
 export interface AvatarHand {
 	origin: BABYLON.Mesh
