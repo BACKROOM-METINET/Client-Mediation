@@ -33,7 +33,7 @@ function setComplexity($event: Event) {
 	)
 }
 
-onMounted(() => {
+onMounted(async () => {
 	const videoElement = document.getElementById(
 		'input_video'
 	) as HTMLVideoElement
@@ -41,8 +41,9 @@ onMounted(() => {
 		'output_canvas'
 	) as HTMLCanvasElement
 	const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement
-	mediation(videoElement, canvasElement, canvas)
-	// mediation(videoElement, canvasElement, canvas).startHolistic()
+	// mediation(videoElement, canvasElement, canvas)
+	const core = await mediation(videoElement, canvasElement, canvas)
+	core.startHolistic()
 })
 </script>
 
