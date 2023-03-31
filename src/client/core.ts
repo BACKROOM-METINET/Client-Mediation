@@ -22,7 +22,7 @@ export async function mediation(
 ) {
 	// Stores
 	const settings = useSettingStore()
-	const scene = useSceneStore()
+	const sceneStore = useSceneStore()
 	const { holisticComplexity } = toRefs(settings)
 
 	// Services
@@ -40,18 +40,18 @@ export async function mediation(
 		}
 	)
 	const remoteComlink = Comlink.wrap<typeof poseWrapper>(worker)
-	const poseWorker = new remoteComlink.pose()
-	const poseThread = await poseWorker
+	const poseWorker = await new remoteComlink.pose()
 
-	scene.render(babylonCanvas)
+	sceneStore.render(babylonCanvas)
 	function startHolistic() {
 		holisticService.holistic(
 			videoSource,
 			async (results: Results) => {
 				isLoading.value = false
-				poseWorker.then((pose) => pose.process(results))
-				scene.onHolisticResult(poseThread)
-				// holisticService.onResults(results, outputCanvas, canvasCtx)
+				poseWorker.process(results).then(async () => {
+					sceneStore.onHolisticResult(poseWorker)
+				})
+				holisticService.onResults(results, outputCanvas, canvasCtx)
 			},
 			holisticComplexity.value
 		)
