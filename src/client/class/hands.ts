@@ -1,11 +1,9 @@
 import EventEmitter from 'events'
 import * as BABYLON from '@babylonjs/core'
-import type { NormalizedLandmarkList } from '@mediapipe/holistic'
 import type {
 	AvatarHand,
 	Scene,
 	Mesh,
-	Camera,
 	Coordinate,
 	Material,
 	HandPosition,
@@ -77,62 +75,4 @@ export class Hand extends EventEmitter {
 			this.updatePoint(point, hand.points[index])
 		})
 	}
-
-	// public async updateHandPoint(
-	// 	hand: BABYLON.Mesh,
-	// 	camera: BABYLON.Camera,
-	// 	coord: {
-	// 		x: number
-	// 		y: number
-	// 		z: number
-	// 	}
-	// ) {
-	// 	hand.position.x = camera.position.x + (10 - coord.x * 10 - 5)
-	// 	hand.position.y = camera.position.y - 5 + (10 - coord.y * 10)
-	// 	hand.position.z = coord.z
-	// }
-
-	// public async updateHandOrigin(
-	// 	camera: BABYLON.Camera,
-	// 	coords: NormalizedLandmarkList
-	// ) {
-	// 	try {
-	// 		const c913 = {
-	// 			x: (coords[9].x + coords[13].x) / 2,
-	// 			y: (coords[9].y + coords[13].y) / 2,
-	// 		}
-	// 		const origin = {
-	// 			x: (c913.x + coords[0].x) / 2,
-	// 			y: (c913.y + coords[0].y) / 2,
-	// 		}
-	// 		this.mesh.origin.position.x = camera.position.x + (10 - origin.x * 10 - 5)
-	// 		this.mesh.origin.position.y = camera.position.y - 5 + (10 - origin.y * 10)
-	// 		this.mesh.origin.position.z = camera.position.z + 8
-	// 	} catch (error) {
-	// 		console.error('Bad Hand Dectection: ', error)
-	// 	}
-	// }
-
-	// public async updateHand(
-	// 	camera: Camera,
-	// 	coords: NormalizedLandmarkList
-	// ): Promise<void> {
-	// 	this.updateHandOrigin(camera, coords)
-	// 	this.mesh.fingersPoints.forEach((point, index) =>
-	// 		this.updateHandPoint(point, camera, {
-	// 			...coords[index],
-	// 			z: this.mesh.origin.position.z - coords[index].z * 30,
-	// 		})
-	// 	)
-	// }
-
-	// private initEvents(): void {
-	// 	this.on('@Update', (camera: Camera, coords: NormalizedLandmarkList) =>
-	// 		this.updateHand(camera, coords)
-	// 	)
-	// }
-
-	// public updateEvent(camera: Camera, coords: NormalizedLandmarkList) {
-	// 	this.emit('@Update', camera, coords)
-	// }
 }
