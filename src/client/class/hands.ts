@@ -8,6 +8,7 @@ import type {
 	Camera,
 	Coordinate,
 	Material,
+	HandPosition,
 } from '@/client/types/business'
 
 const ORIGIN_DIAMETER = 1
@@ -61,6 +62,19 @@ export class Hand extends EventEmitter {
 			)
 		}
 		return points
+	}
+
+	private async updatePoint(hand: BABYLON.Mesh, coord: Coordinate) {
+		hand.position.x = coord.x
+		hand.position.y = coord.y
+		hand.position.z = coord.z
+	}
+
+	public async update(hand: HandPosition) {
+		this.updatePoint(this.mesh.origin, hand.origin)
+		this.mesh.fingersPoints.forEach((point, index) =>
+			this.updatePoint(point, hand.points[index])
+		)
 	}
 
 	public async updateHandPoint(

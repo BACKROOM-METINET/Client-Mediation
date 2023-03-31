@@ -7,7 +7,6 @@ import {
 	type Engine as EngineType,
 	type Scene as SceneType,
 } from '@babylonjs/core'
-import type { Results } from '@mediapipe/holistic'
 import type * as Comlink from 'comlink'
 import { defineStore } from 'pinia'
 import { ref, computed, toRefs } from 'vue'
@@ -15,6 +14,7 @@ import { Hand } from '@/client/class/hands'
 import { getMaterial } from '@/client/helpers/materials'
 import { getMesh, loadMesh } from '@/client/helpers/mesh'
 import type { Avatar } from '@/client/types/business'
+import { coordinateToVector3 } from '@/client/utils/converter'
 import type { Pose } from '@/client/workers/pose-processing'
 import { useCameraStore } from './camera'
 
@@ -53,17 +53,21 @@ export const useSceneStore = defineStore('scene', () => {
 		)
 	}
 
-	function render(canvas: HTMLCanvasElement) {
+	async function render(
+		canvas: HTMLCanvasElement,
+		remote: Comlink.Remote<Pose>
+	) {
 		engine.value = new Engine(canvas, true)
 
-		const createScene = function () {
+		const createScene = async () => {
 			scene.value = new Scene(engine.value as EngineType)
 
+			const cameraData = await remote.camera
 			// Camera
 			cameraStore.setCamera(
 				new FreeCamera(
 					'camera1',
-					new Vector3(0, 5, -10),
+					coordinateToVector3(cameraData.position),
 					sceneRef.value as Scene
 				)
 			)
@@ -120,7 +124,7 @@ export const useSceneStore = defineStore('scene', () => {
 
 			return sceneRef.value
 		}
-		const sceneToRender = createScene()
+		const sceneToRender = await createScene()
 		engine.value?.runRenderLoop(() => {
 			sceneToRender?.render()
 		})
@@ -130,12 +134,15 @@ export const useSceneStore = defineStore('scene', () => {
 	}
 
 	async function onHolisticResult(remote: Comlink.Remote<Pose>) {
-		remote.cameraRotation.then((cameraRotation) => {
-			if (cameraRef.value) {
-				cameraRef.value.rotation.x = cameraRotation.x
-				cameraRef.value.rotation.y = cameraRotation.y
-			}
-		})
+		remote.cameraRotation
+			.then((_camera) => {
+				if (!_camera) return
+				console.log('[scene] : ', _camera.x)
+				cameraStore.setCameraRotation(_camera.x, _camera.y)
+			})
+			.catch((err) => {})
+		remote.handLeft.then((hand) => avatarRef.value?.hands.left.update(hand))
+		remote.handRight.then((hand) => avatarRef.value?.hands.right.update(hand))
 		// if (cameraRef.value) {
 		// 	if (results.leftHandLandmarks) {
 		// 		avatarRef.value?.hands.left.updateEvent(

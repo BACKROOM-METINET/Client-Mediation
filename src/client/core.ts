@@ -42,7 +42,7 @@ export async function mediation(
 	const remoteComlink = Comlink.wrap<typeof poseWrapper>(worker)
 	const poseWorker = await new remoteComlink.pose()
 
-	sceneStore.render(babylonCanvas)
+	sceneStore.render(babylonCanvas, poseWorker)
 	function startHolistic() {
 		holisticService.holistic(
 			videoSource,
