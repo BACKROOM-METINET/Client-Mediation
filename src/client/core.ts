@@ -12,6 +12,8 @@ import { useSettingStore } from '@/stores/setting'
 import { useHolisticService } from './services/holistic'
 import type { poseWrapper } from './workers/pose-processing'
 
+export const isLoading = ref<boolean>(true)
+
 export async function mediation(
 	videoSource: HTMLVideoElement,
 	outputCanvas: HTMLCanvasElement,
@@ -28,7 +30,6 @@ export async function mediation(
 
 	// Variables
 	const canvasCtx = outputCanvas.getContext('2d') as CanvasRenderingContext2D
-	const isLoading = ref<boolean>(true)
 	// const isCameraActive = ref(true)
 	// const isMediapipeViewActive = ref(true)
 	// const isSettingMenuOpen = ref(false)
@@ -40,14 +41,16 @@ export async function mediation(
 	)
 	const remoteComlink = Comlink.wrap<typeof poseWrapper>(worker)
 	const poseWorker = new remoteComlink.pose()
+	const poseThread = await poseWorker
 
-	scene.render(babylonCanvas, await poseWorker)
+	scene.render(babylonCanvas)
 	function startHolistic() {
 		holisticService.holistic(
 			videoSource,
 			async (results: Results) => {
 				isLoading.value = false
-				poseWorker.then(async (pose) => await pose.process(results))
+				poseWorker.then((pose) => pose.process(results))
+				scene.onHolisticResult(poseThread)
 				// holisticService.onResults(results, outputCanvas, canvasCtx)
 			},
 			holisticComplexity.value

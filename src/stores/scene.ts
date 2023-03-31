@@ -53,7 +53,7 @@ export const useSceneStore = defineStore('scene', () => {
 		)
 	}
 
-	function render(canvas: HTMLCanvasElement, remote: Comlink.Remote<Pose>) {
+	function render(canvas: HTMLCanvasElement) {
 		engine.value = new Engine(canvas, true)
 
 		const createScene = function () {
@@ -121,12 +121,7 @@ export const useSceneStore = defineStore('scene', () => {
 			return sceneRef.value
 		}
 		const sceneToRender = createScene()
-		engine.value?.runRenderLoop(async () => {
-			const cameraRotation = await remote.cameraRotation
-			if (cameraRef.value) {
-				cameraRef.value.rotation.x = cameraRotation.x
-				cameraRef.value.rotation.y = cameraRotation.y
-			}
+		engine.value?.runRenderLoop(() => {
 			sceneToRender?.render()
 		})
 		window.addEventListener('resize', function () {
@@ -134,7 +129,13 @@ export const useSceneStore = defineStore('scene', () => {
 		})
 	}
 
-	function onHolisticResult(results: Results) {
+	async function onHolisticResult(remote: Comlink.Remote<Pose>) {
+		remote.cameraRotation.then((cameraRotation) => {
+			if (cameraRef.value) {
+				cameraRef.value.rotation.x = cameraRotation.x
+				cameraRef.value.rotation.y = cameraRotation.y
+			}
+		})
 		// if (cameraRef.value) {
 		// 	if (results.leftHandLandmarks) {
 		// 		avatarRef.value?.hands.left.updateEvent(

@@ -16,13 +16,13 @@ import EyeSlashIcon from '@/components/icons/EyeSlashIcon.vue'
 import SettingIcon from '@/components/icons/SettingIcon.vue'
 import { useSceneStore } from '@/stores/scene'
 import { useSettingStore } from '@/stores/setting'
+import { isLoading } from '../../client/core';
 
 const settings = useSettingStore()
 const { holisticComplexity } = toRefs(settings)
 const scene = useSceneStore()
 const { fpsCounter } = toRefs(scene)
 
-const isLoading = ref(true)
 const isCameraActive = ref(true)
 const isMediapipeViewActive = ref(true)
 const isSettingMenuOpen = ref(false)
