@@ -134,13 +134,9 @@ export const useSceneStore = defineStore('scene', () => {
 	}
 
 	async function onHolisticResult(remote: Comlink.Remote<Pose>) {
-		remote.cameraRotation
-			.then((_camera) => {
-				if (!_camera) return
-				console.log('[scene] : ', _camera.x)
-				cameraStore.setCameraRotation(_camera.x, _camera.y)
-			})
-			.catch((err) => {})
+		remote.camera.then((_camera) =>
+			cameraStore.setCameraRotation(_camera.rotation.x, _camera.rotation.y)
+		)
 		remote.handLeft.then((hand) => avatarRef.value?.hands.left.update(hand))
 		remote.handRight.then((hand) => avatarRef.value?.hands.right.update(hand))
 		// if (cameraRef.value) {

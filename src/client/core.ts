@@ -48,6 +48,7 @@ export async function mediation(
 			videoSource,
 			async (results: Results) => {
 				isLoading.value = false
+				if (!results.poseLandmarks) return
 				poseWorker.process(results).then(async () => {
 					sceneStore.onHolisticResult(poseWorker)
 				})
