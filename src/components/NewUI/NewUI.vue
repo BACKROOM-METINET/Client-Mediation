@@ -7,7 +7,7 @@ import 'babylonjs-loaders'
 import '@babylonjs/loaders/OBJ/objFileLoader'
 
 import { onMounted, ref, toRefs } from 'vue'
-import { mediation } from '@/client/core'
+import { mediation, isLoading } from '@/client/core'
 import type { Complexity } from '@/client/types/business'
 import CameraIcon from '@/components/icons/CameraIcon.vue'
 import CloseIcon from '@/components/icons/CloseIcon.vue'
@@ -16,7 +16,6 @@ import EyeSlashIcon from '@/components/icons/EyeSlashIcon.vue'
 import SettingIcon from '@/components/icons/SettingIcon.vue'
 import { useSceneStore } from '@/stores/scene'
 import { useSettingStore } from '@/stores/setting'
-import { isLoading } from '../../client/core';
 
 const settings = useSettingStore()
 const { holisticComplexity } = toRefs(settings)
@@ -44,8 +43,6 @@ onMounted(async () => {
 	// mediation(videoElement, canvasElement, canvas)
 	const core = await mediation(videoElement, canvasElement, canvas)
 	core.startHolistic()
-	// main()
-	// comlink()
 })
 </script>
 
