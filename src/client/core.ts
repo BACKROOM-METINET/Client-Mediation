@@ -6,10 +6,10 @@ import '@babylonjs/loaders/OBJ/objFileLoader'
 
 import type { Results } from '@mediapipe/holistic'
 import * as Comlink from 'comlink'
-import { ref, toRefs } from 'vue'
+import { ref } from 'vue'
 import { useSceneStore } from '@/stores/scene'
-import { useSettingStore } from '@/stores/setting'
 import { useHolisticService } from './services/holistic'
+import type { MediationConfig } from './types/config'
 import type { poseWrapper } from './workers/pose-processing'
 
 export const isLoading = ref<boolean>(true)
@@ -18,12 +18,10 @@ export async function mediation(
 	videoSource: HTMLVideoElement,
 	outputCanvas: HTMLCanvasElement,
 	babylonCanvas: HTMLCanvasElement,
-	_config?: any
+	config: MediationConfig = {}
 ) {
 	// Stores
-	const settings = useSettingStore()
 	const sceneStore = useSceneStore()
-	const { holisticComplexity } = toRefs(settings)
 
 	// Services
 	const holisticService = useHolisticService()
@@ -42,7 +40,7 @@ export async function mediation(
 	const remoteComlink = Comlink.wrap<typeof poseWrapper>(worker)
 	const poseWorker = await new remoteComlink.pose()
 
-	sceneStore.render(babylonCanvas, poseWorker)
+	sceneStore.render(babylonCanvas, poseWorker, config)
 	function startHolistic() {
 		holisticService.holistic(
 			videoSource,
@@ -54,7 +52,7 @@ export async function mediation(
 				})
 				holisticService.onResults(results, outputCanvas, canvasCtx)
 			},
-			holisticComplexity.value
+			config.holisticComplexity ?? 1
 		)
 	}
 	return { startHolistic }

@@ -6,9 +6,10 @@ import '@babylonjs/loaders/glTF'
 import 'babylonjs-loaders'
 import '@babylonjs/loaders/OBJ/objFileLoader'
 
-import { onMounted, ref, toRefs } from 'vue'
+import { computed, onMounted, ref, toRefs } from 'vue'
 import { mediation, isLoading } from '@/client/core'
 import type { Complexity } from '@/client/types/business'
+import { MeshRoomEnum } from '@/client/types/meshes'
 import CameraIcon from '@/components/icons/CameraIcon.vue'
 import CloseIcon from '@/components/icons/CloseIcon.vue'
 import EyeIcon from '@/components/icons/EyeIcon.vue'
@@ -18,19 +19,35 @@ import { useSceneStore } from '@/stores/scene'
 import { useSettingStore } from '@/stores/setting'
 
 const settings = useSettingStore()
-const { holisticComplexity } = toRefs(settings)
+const { holisticComplexityRef, sceneRoomRef } = toRefs(settings)
 const scene = useSceneStore()
 const { fpsCounter } = toRefs(scene)
 
 const isCameraActive = ref(true)
 const isMediapipeViewActive = ref(true)
 const isSettingMenuOpen = ref(false)
+const currentRoom = ref(sceneRoomRef.value ?? MeshRoomEnum.PROTOTYPE_01)
 
 function setComplexity($event: Event) {
 	settings.setHolysticComplexity(
 		+($event.target as HTMLInputElement).value as Complexity
 	)
+	window.location.reload()
 }
+
+function setRoom($event: Event) {
+	console.log(($event.target as HTMLSelectElement).value)
+	settings.setSceneRoom(($event.target as HTMLSelectElement).value as any)
+	window.location.reload()
+}
+
+const roomEnums = computed(() => {
+	const roomNames = []
+	for (const key in MeshRoomEnum) {
+		roomNames.push(key)
+	}
+	return roomNames
+})
 
 onMounted(async () => {
 	const videoElement = document.getElementById(
@@ -41,8 +58,12 @@ onMounted(async () => {
 	) as HTMLCanvasElement
 	const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement
 	// mediation(videoElement, canvasElement, canvas)
-	const core = await mediation(videoElement, canvasElement, canvas)
-	core.startHolistic()
+	const config = {
+		scene: sceneRoomRef.value,
+		holisticComplexity: holisticComplexityRef.value,
+	}
+	const core = await mediation(videoElement, canvasElement, canvas, config)
+	// core.startHolistic()
 })
 </script>
 
@@ -114,17 +135,35 @@ onMounted(async () => {
 			:class="{ open: isSettingMenuOpen }">
 			<div class="settings-form">
 				<h2>Settings</h2>
-				<label for="HolisticComplexityInput" class="form-label">
-					Holistic complexity : {{ holisticComplexity }}
-				</label>
-				<input
-					type="range"
-					class="form-range"
-					id="HolisticComplexityInput"
-					v-model="holisticComplexity"
-					min="0"
-					max="2"
-					@change="setComplexity($event)" />
+				<div class="my-2">
+					<label for="HolisticComplexityInput" class="form-label">
+						Holistic complexity : {{ holisticComplexityRef }}
+					</label>
+					<input
+						type="range"
+						class="form-range"
+						id="HolisticComplexityInput"
+						v-model="holisticComplexityRef"
+						min="0"
+						max="2"
+						@change="setComplexity($event)" />
+				</div>
+				<div class="my-2">
+					<label for="RoomSelect" class="form-label">
+						Current Mediation Room
+					</label>
+					<select
+						id="RoomSelect"
+						class="form-select"
+						aria-label=""
+						v-model="currentRoom"
+						@change="setRoom($event)">
+						<option v-for="room in roomEnums" :key="room" :value="room">
+							{{ room }}
+						</option>
+					</select>
+				</div>
+
 				<button
 					id="btn-close-settings"
 					type="button"
