@@ -6,6 +6,7 @@ import {
 	Vector3,
 	type Engine as EngineType,
 	type Scene as SceneType,
+	PhotoDome,
 } from '@babylonjs/core'
 import type * as Comlink from 'comlink'
 import { defineStore } from 'pinia'
@@ -64,13 +65,23 @@ export const useSceneStore = defineStore('scene', () => {
 		const createScene = async () => {
 			scene.value = new Scene(engine.value as EngineType)
 
+			const dome = new PhotoDome(
+				'testdome',
+				'assets/skyboxes/sky.png',
+				{
+					resolution: 32,
+					size: 1000,
+				},
+				scene.value as Scene
+			)
+
 			const cameraData = await remote.camera
 			// Camera
 			cameraStore.setCamera(
 				new FreeCamera(
 					'camera1',
 					coordinateToVector3(cameraData.position),
-					sceneRef.value as Scene
+					scene.value as Scene
 				)
 			)
 			if (!cameraRef.value) return
@@ -80,10 +91,10 @@ export const useSceneStore = defineStore('scene', () => {
 			// Light
 			const light = new HemisphericLight(
 				'light',
-				new Vector3(0, 1, 0),
+				new Vector3(-30, 15, 30),
 				scene.value as Scene
 			)
-			light.intensity = 0.7
+			light.intensity = 1
 
 			// Avatar
 			// avatar.value = {
