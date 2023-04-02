@@ -9,7 +9,8 @@ import '@babylonjs/loaders/OBJ/objFileLoader'
 import { computed, onMounted, ref, toRefs } from 'vue'
 import { mediation, isLoading } from '@/client/core'
 import type { Complexity } from '@/client/types/business'
-import { MeshRoomEnum } from '@/client/types/meshes'
+import type { MediationConfig } from '@/client/types/config'
+import { MeshRoomEnum, SkyboxEnum } from '@/client/types/meshes'
 import CameraIcon from '@/components/icons/CameraIcon.vue'
 import CloseIcon from '@/components/icons/CloseIcon.vue'
 import EyeIcon from '@/components/icons/EyeIcon.vue'
@@ -17,10 +18,9 @@ import EyeSlashIcon from '@/components/icons/EyeSlashIcon.vue'
 import SettingIcon from '@/components/icons/SettingIcon.vue'
 import { useSceneStore } from '@/stores/scene'
 import { useSettingStore } from '@/stores/setting'
-import { MediationConfig } from '../../client/types/config'
 
 const settings = useSettingStore()
-const { holisticComplexityRef, sceneRoomRef } = toRefs(settings)
+const { holisticComplexityRef, sceneRoomRef, sceneSkyboxRef } = toRefs(settings)
 const scene = useSceneStore()
 const { fpsCounter } = toRefs(scene)
 
@@ -37,9 +37,13 @@ function setComplexity($event: Event) {
 }
 
 function setRoom($event: Event) {
-	console.log(($event.target as HTMLSelectElement).value)
 	settings.setSceneRoom(($event.target as HTMLSelectElement).value as any)
 	window.location.reload()
+}
+
+function setSkybox($event: Event) {
+	settings.setSkybox(($event.target as HTMLSelectElement).value as any)
+	scene.setSkybox(sceneSkyboxRef.value as SkyboxEnum)
 }
 
 const roomEnums = computed(() => {
@@ -48,6 +52,14 @@ const roomEnums = computed(() => {
 		roomNames.push(key)
 	}
 	return roomNames
+})
+
+const skyEnums = computed(() => {
+	const skyNames = []
+	for (const key in SkyboxEnum) {
+		skyNames.push(key)
+	}
+	return skyNames
 })
 
 onMounted(async () => {
@@ -61,11 +73,16 @@ onMounted(async () => {
 	// mediation(videoElement, canvasElement, canvas)
 	const config: MediationConfig = {
 		scene: sceneRoomRef.value as MeshRoomEnum,
+		skybox: sceneSkyboxRef.value as SkyboxEnum,
 		holisticComplexity: holisticComplexityRef.value,
 	}
 	const core = await mediation(videoElement, canvasElement, canvas, config)
-	core.startHolistic()
+	// core.startHolistic()
 })
+
+function toSkyboxImgURL(name: string): string {
+	return `assets/skyboxes/preview/${name.toLocaleLowerCase()}_preview.png`
+}
 </script>
 
 <template>
@@ -138,7 +155,7 @@ onMounted(async () => {
 				<h2>Settings</h2>
 				<div class="my-2">
 					<label for="HolisticComplexityInput" class="form-label">
-						Holistic complexity : {{ holisticComplexityRef }}
+						Holistic complexity : {{ holisticComplexityRef }} (*reload)
 					</label>
 					<input
 						type="range"
@@ -151,7 +168,7 @@ onMounted(async () => {
 				</div>
 				<div class="my-2">
 					<label for="RoomSelect" class="form-label">
-						Current Mediation Room
+						Current Mediation Room (*reload)
 					</label>
 					<select
 						id="RoomSelect"
@@ -163,6 +180,32 @@ onMounted(async () => {
 							{{ room }}
 						</option>
 					</select>
+				</div>
+				<div class="my-2">
+					<label for="SkyboxSelect" class="form-label">
+						Current Mediation Sky
+					</label>
+					<div id="SkyboxSelect">
+						<div
+							v-for="sky in skyEnums"
+							:key="sky"
+							class="form-check form-check-inline">
+							<input
+								class="btn-check"
+								type="radio"
+								name="inlineRadioOptions"
+								:id="'radio' + sky"
+								:value="sky"
+								@change="setSkybox($event)" />
+							<label class="btn btn-dark" :for="'radio' + sky">
+								<img
+									:src="toSkyboxImgURL(sky)"
+									class="img-thumbnail"
+									alt="preview"
+									width="75" />
+							</label>
+						</div>
+					</div>
 				</div>
 
 				<button
