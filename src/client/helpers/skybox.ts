@@ -15,6 +15,7 @@ const skybox: SkyboxList = {
 				},
 				scene
 			)
+			_dome.rotation.y = 0
 
 			// Light
 			const light = new HemisphericLight(
@@ -32,11 +33,12 @@ const skybox: SkyboxList = {
 				'skybox',
 				'assets/skyboxes/clear_sky_ground.png',
 				{
-					resolution: 64,
-					size: 2000,
+					resolution: 32,
+					size: 1000,
 				},
 				scene
 			)
+			_dome.rotation.y = 0
 
 			// Light
 			const light = new HemisphericLight(
@@ -59,6 +61,7 @@ const skybox: SkyboxList = {
 				},
 				scene
 			)
+			_dome.rotation.y = 0
 
 			// Light
 			const light = new HemisphericLight(
@@ -67,9 +70,7 @@ const skybox: SkyboxList = {
 				scene
 			)
 			light.intensity = 0.3
-			// light.diffuse = new Color3(255, 255, 0)
 			light.specular = new Color3(150, 100, 25)
-			// light.groundColor = new Color3(255, 255, 0)
 		},
 	},
 }

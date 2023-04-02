@@ -14,10 +14,10 @@ import { getMesh, loadMesh } from '@/client/helpers/mesh'
 import { loadSkybox } from '@/client/helpers/skybox'
 import type { Avatar } from '@/client/types/business'
 import type { MediationConfig } from '@/client/types/config'
+import type { SkyboxEnum } from '@/client/types/meshes'
 import { coordinateToVector3 } from '@/client/utils/converter'
 import type { Pose } from '@/client/workers/pose-processing'
 import { useCameraStore } from './camera'
-import type { SkyboxEnum } from '@/client/types/meshes'
 
 export const useSceneStore = defineStore('scene', () => {
 	// Stores
