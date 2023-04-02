@@ -17,6 +17,7 @@ import EyeSlashIcon from '@/components/icons/EyeSlashIcon.vue'
 import SettingIcon from '@/components/icons/SettingIcon.vue'
 import { useSceneStore } from '@/stores/scene'
 import { useSettingStore } from '@/stores/setting'
+import { MediationConfig } from '../../client/types/config'
 
 const settings = useSettingStore()
 const { holisticComplexityRef, sceneRoomRef } = toRefs(settings)
@@ -58,12 +59,12 @@ onMounted(async () => {
 	) as HTMLCanvasElement
 	const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement
 	// mediation(videoElement, canvasElement, canvas)
-	const config = {
-		scene: sceneRoomRef.value,
+	const config: MediationConfig = {
+		scene: sceneRoomRef.value as MeshRoomEnum,
 		holisticComplexity: holisticComplexityRef.value,
 	}
 	const core = await mediation(videoElement, canvasElement, canvas, config)
-	// core.startHolistic()
+	core.startHolistic()
 })
 </script>
 
