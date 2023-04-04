@@ -1,16 +1,56 @@
 import {
-	type Scene,
 	type StandardMaterial,
 	Vector3,
 	type Mesh,
 	MeshBuilder,
 	SceneLoader,
+	AbstractMesh,
 } from '@babylonjs/core'
-import type { ChairConfig } from '../types/business'
-import { radToDeg } from '../utils/converter'
+import type { ChairConfig, Scene } from '@/client/types/business'
+import { MeshRoomEnum, type MeshRoomList } from '@/client/types/meshes'
+import { radToDeg } from '@/client/utils/converter'
 import { getMaterial } from './materials'
 
+// Helpers
+const materials = getMaterial()
+
 const MESHES_REPOSITORY = '../../assets/meshes/'
+
+const MESH_ROOM: MeshRoomList = {
+	PROTOTYPE_01: {
+		name: 'meeting-room-v2.obj',
+		funct: (meshes: AbstractMesh[], scene: Scene) => {
+			console.log(meshes)
+			meshes.forEach((meshe) => {
+				meshe.position = new Vector3(-100, -1, 100)
+				meshe.scaling.scaleInPlace(10)
+				if (meshe.name === 'Floor') meshe.material = materials.woodDark(scene)
+			})
+		},
+	},
+	PROTOTYPE_02: {
+		name: 'prototype-2-texture&door.gltf',
+		funct: (meshes: AbstractMesh[]) => {
+			meshes.forEach((meshe) => {
+				if (meshe.name !== '__root__') return
+				meshe.position.x += 15
+				meshe.position.y += -0.5
+				meshe.position.z += 15
+			})
+		},
+	},
+	PROTOTYPE_02_NOTEXTURE: {
+		name: 'prototype-2-notexture&door.gltf',
+		funct: (meshes: AbstractMesh[]) => {
+			meshes.forEach((meshe) => {
+				if (meshe.name !== '__root__') return
+				meshe.position.x += 15
+				meshe.position.y += -0.5
+				meshe.position.z += 15
+			})
+		},
+	},
+}
 
 export function getMesh() {
 	const tableMediation = (
@@ -64,26 +104,16 @@ export function getMesh() {
 }
 
 export function loadMesh() {
-	// Helpers
-	const materials = getMaterial()
-
-	// Getters
-
-	const mediationRoom = (scene: Scene) => {
+	const mediationRoom = (
+		scene: Scene,
+		meshRoom: MeshRoomEnum = MeshRoomEnum.PROTOTYPE_01
+	) => {
 		SceneLoader.ImportMesh(
 			'',
 			MESHES_REPOSITORY,
-			'meeting-room-v2.obj',
+			MESH_ROOM[meshRoom].name,
 			scene,
-			(meshes) => {
-				meshes.forEach((meshe) => {
-					// Vector3(0,2.6,0);
-					meshe.position = new Vector3(-100, -1, 100)
-					//meshe.size(2);
-					meshe.scaling.scaleInPlace(10)
-					if (meshe.name === 'Floor') meshe.material = materials.woodDark(scene)
-				})
-			}
+			(meshes) => MESH_ROOM[meshRoom].funct(meshes, scene)
 		)
 	}
 

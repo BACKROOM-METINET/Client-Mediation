@@ -6,6 +6,7 @@ import {
 	Vector3,
 	type Engine as EngineType,
 	type Scene as SceneType,
+	PhotoDome,
 } from '@babylonjs/core'
 import type * as Comlink from 'comlink'
 import { defineStore } from 'pinia'
@@ -14,6 +15,7 @@ import { Hand } from '@/client/class/hands'
 import { getMaterial } from '@/client/helpers/materials'
 import { getMesh, loadMesh } from '@/client/helpers/mesh'
 import type { Avatar } from '@/client/types/business'
+import type { MediationConfig } from '@/client/types/config'
 import { coordinateToVector3 } from '@/client/utils/converter'
 import type { Pose } from '@/client/workers/pose-processing'
 import { useCameraStore } from './camera'
@@ -55,12 +57,23 @@ export const useSceneStore = defineStore('scene', () => {
 
 	async function render(
 		canvas: HTMLCanvasElement,
-		remote: Comlink.Remote<Pose>
+		remote: Comlink.Remote<Pose>,
+		config: MediationConfig
 	) {
 		engine.value = new Engine(canvas, true)
 
 		const createScene = async () => {
 			scene.value = new Scene(engine.value as EngineType)
+
+			const dome = new PhotoDome(
+				'testdome',
+				'assets/skyboxes/sky.png',
+				{
+					resolution: 32,
+					size: 1000,
+				},
+				scene.value as Scene
+			)
 
 			const cameraData = await remote.camera
 			// Camera
@@ -68,7 +81,7 @@ export const useSceneStore = defineStore('scene', () => {
 				new FreeCamera(
 					'camera1',
 					coordinateToVector3(cameraData.position),
-					sceneRef.value as Scene
+					scene.value as Scene
 				)
 			)
 			if (!cameraRef.value) return
@@ -78,39 +91,39 @@ export const useSceneStore = defineStore('scene', () => {
 			// Light
 			const light = new HemisphericLight(
 				'light',
-				new Vector3(0, 1, 0),
+				new Vector3(-30, 15, 30),
 				scene.value as Scene
 			)
-			light.intensity = 0.7
+			light.intensity = 1
 
 			// Avatar
-			avatar.value = {
-				hands: {
-					right: new Hand(
-						'rightHandRef',
-						sceneRef.value as Scene,
-						{
-							x: cameraRef.value.position.x + 3,
-							y: cameraRef.value.position.y - 3,
-							z: -3,
-						},
-						materials.materialRed(sceneRef.value as Scene)
-					),
-					left: new Hand(
-						'leftHandRef',
-						sceneRef.value as Scene,
-						{
-							x: cameraRef.value.position.x - 3,
-							y: cameraRef.value.position.y - 3,
-							z: -3,
-						},
-						materials.materialBlue(sceneRef.value as Scene)
-					),
-				},
-			}
+			// avatar.value = {
+			// 	hands: {
+			// 		right: new Hand(
+			// 			'rightHandRef',
+			// 			sceneRef.value as Scene,
+			// 			{
+			// 				x: cameraRef.value.position.x + 3,
+			// 				y: cameraRef.value.position.y - 3,
+			// 				z: -3,
+			// 			},
+			// 			materials.materialRed(sceneRef.value as Scene)
+			// 		),
+			// 		left: new Hand(
+			// 			'leftHandRef',
+			// 			sceneRef.value as Scene,
+			// 			{
+			// 				x: cameraRef.value.position.x - 3,
+			// 				y: cameraRef.value.position.y - 3,
+			// 				z: -3,
+			// 			},
+			// 			materials.materialBlue(sceneRef.value as Scene)
+			// 		),
+			// 	},
+			// }
 
 			// Import Meshes
-			meshesLoader.mediationRoom(sceneRef.value as Scene)
+			meshesLoader.mediationRoom(sceneRef.value as Scene, config.scene)
 
 			const tableRayon = createTable(membersNumber.value)
 
