@@ -7,10 +7,10 @@ import {
 	POSE_CONNECTIONS,
 	type Results,
 } from '@mediapipe/holistic'
-import type { Complexity } from '../types/business'
+import type { Complexity } from '@/client/types/business'
 
-const RENDER_WIDTH = window.innerWidth / 2
-const RENDER_HEIGHT = window.innerHeight / 2
+const RENDER_WIDTH = 1080
+const RENDER_HEIGHT = 720
 
 export function useHolisticService() {
 	function holistic(
@@ -26,19 +26,23 @@ export function useHolisticService() {
 		holistic.setOptions({
 			modelComplexity: holisticComplexity,
 			smoothLandmarks: true,
-			enableSegmentation: true,
-			smoothSegmentation: true,
+			enableSegmentation: false,
+			smoothSegmentation: false,
 			refineFaceLandmarks: true,
 			minDetectionConfidence: 0.5,
-			minTrackingConfidence: 0.5,
+			minTrackingConfidence: 0.55,
 		})
 		holistic.onResults(onResults)
+		let status = true
 		const camera = new Camera(videoElement, {
 			onFrame: async () => {
-				await holistic.send({ image: videoElement })
+				// Half input fps. This version of Holistic is heavy on CPU time.
+				// Wait until they fix web worker (https://github.com/google/mediapipe/issues/2506).
+				if (status) await holistic.send({ image: videoElement })
+				status = !status
 			},
-			width: window.innerWidth / 2,
-			height: window.innerHeight / 2,
+			width: RENDER_WIDTH,
+			height: RENDER_HEIGHT,
 		})
 		camera.start()
 	}

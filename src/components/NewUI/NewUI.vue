@@ -66,9 +66,6 @@ onMounted(async () => {
 	const videoElement = document.getElementById(
 		'input_video'
 	) as HTMLVideoElement
-	const canvasElement = document.getElementById(
-		'output_canvas'
-	) as HTMLCanvasElement
 	const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement
 	// mediation(videoElement, canvasElement, canvas)
 	const config: MediationConfig = {
@@ -76,7 +73,7 @@ onMounted(async () => {
 		skybox: sceneSkyboxRef.value as SkyboxEnum,
 		holisticComplexity: holisticComplexityRef.value,
 	}
-	const core = await mediation(videoElement, canvasElement, canvas, config)
+	const core = await mediation(videoElement, canvas, config)
 	core.startHolistic()
 })
 
@@ -90,8 +87,7 @@ function toSkyboxImgURL(name: string): string {
 		<div
 			class="position-absolute over-cam cam"
 			:class="{ hide: !isCameraActive }">
-			<video id="input_video" :class="{ hide: !isLoading }"></video>
-			<canvas id="output_canvas" :class="{ hide: isLoading }"></canvas>
+			<video id="input_video"></video>
 			<button id="btn-close-cam" type="button" @click="isCameraActive = false">
 				<CloseIcon></CloseIcon>
 			</button>
