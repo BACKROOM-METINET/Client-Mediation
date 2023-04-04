@@ -7,7 +7,7 @@ import 'babylonjs-loaders'
 import '@babylonjs/loaders/OBJ/objFileLoader'
 
 import { onMounted, ref, toRefs } from 'vue'
-import { mediation } from '@/client/core'
+import { mediation, isLoading } from '@/client/core'
 import type { Complexity } from '@/client/types/business'
 import CameraIcon from '@/components/icons/CameraIcon.vue'
 import CloseIcon from '@/components/icons/CloseIcon.vue'
@@ -22,7 +22,6 @@ const { holisticComplexity } = toRefs(settings)
 const scene = useSceneStore()
 const { fpsCounter } = toRefs(scene)
 
-const isLoading = ref(true)
 const isCameraActive = ref(true)
 const isMediapipeViewActive = ref(true)
 const isSettingMenuOpen = ref(false)
@@ -33,7 +32,7 @@ function setComplexity($event: Event) {
 	)
 }
 
-onMounted(() => {
+onMounted(async () => {
 	const videoElement = document.getElementById(
 		'input_video'
 	) as HTMLVideoElement
@@ -41,8 +40,9 @@ onMounted(() => {
 		'output_canvas'
 	) as HTMLCanvasElement
 	const canvas = document.getElementById('renderCanvas') as HTMLCanvasElement
-	mediation(videoElement, canvasElement, canvas)
-	// mediation(videoElement, canvasElement, canvas).startHolistic()
+	// mediation(videoElement, canvasElement, canvas)
+	const core = await mediation(videoElement, canvasElement, canvas)
+	core.startHolistic()
 })
 </script>
 

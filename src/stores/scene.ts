@@ -7,12 +7,15 @@ import {
 	type Engine as EngineType,
 	type Scene as SceneType,
 } from '@babylonjs/core'
+import type * as Comlink from 'comlink'
 import { defineStore } from 'pinia'
 import { ref, computed, toRefs } from 'vue'
 import { Hand } from '@/client/class/hands'
 import { getMaterial } from '@/client/helpers/materials'
 import { getMesh, loadMesh } from '@/client/helpers/mesh'
 import type { Avatar } from '@/client/types/business'
+import { coordinateToVector3 } from '@/client/utils/converter'
+import type { Pose } from '@/client/workers/pose-processing'
 import { useCameraStore } from './camera'
 
 export const useSceneStore = defineStore('scene', () => {
@@ -50,17 +53,21 @@ export const useSceneStore = defineStore('scene', () => {
 		)
 	}
 
-	function render(canvas: HTMLCanvasElement) {
+	async function render(
+		canvas: HTMLCanvasElement,
+		remote: Comlink.Remote<Pose>
+	) {
 		engine.value = new Engine(canvas, true)
 
-		const createScene = function () {
+		const createScene = async () => {
 			scene.value = new Scene(engine.value as EngineType)
 
+			const cameraData = await remote.camera
 			// Camera
 			cameraStore.setCamera(
 				new FreeCamera(
 					'camera1',
-					new Vector3(0, 5, -10),
+					coordinateToVector3(cameraData.position),
 					sceneRef.value as Scene
 				)
 			)
@@ -117,13 +124,35 @@ export const useSceneStore = defineStore('scene', () => {
 
 			return sceneRef.value
 		}
-		const sceneToRender = createScene()
-		engine.value?.runRenderLoop(function () {
+		const sceneToRender = await createScene()
+		engine.value?.runRenderLoop(() => {
 			sceneToRender?.render()
 		})
 		window.addEventListener('resize', function () {
 			engine.value?.resize()
 		})
+	}
+
+	async function onHolisticResult(remote: Comlink.Remote<Pose>) {
+		remote.camera.then((_camera) =>
+			cameraStore.setCameraRotation(_camera.rotation.x, _camera.rotation.y)
+		)
+		remote.handLeft.then((hand) => avatarRef.value?.hands.left.update(hand))
+		remote.handRight.then((hand) => avatarRef.value?.hands.right.update(hand))
+		// if (cameraRef.value) {
+		// 	if (results.leftHandLandmarks) {
+		// 		avatarRef.value?.hands.left.updateEvent(
+		// 			cameraRef.value as Camera,
+		// 			results.leftHandLandmarks
+		// 		)
+		// 	}
+		// 	if (results.rightHandLandmarks) {
+		// 		avatarRef.value?.hands.right.updateEvent(
+		// 			cameraRef.value as Camera,
+		// 			results.rightHandLandmarks
+		// 		)
+		// 	}
+		// }
 	}
 
 	return {
@@ -133,5 +162,6 @@ export const useSceneStore = defineStore('scene', () => {
 		membersNumberRef,
 		fpsCounter,
 		render,
+		onHolisticResult,
 	}
 })

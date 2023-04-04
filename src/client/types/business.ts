@@ -1,22 +1,14 @@
 import type * as BABYLON from '@babylonjs/core'
-import type { Hand } from '../class/hands'
+import type { Results } from '@mediapipe/holistic'
+import type { Hand } from '@/client/class/hands'
 export interface Coordinate {
 	x: number
 	y: number
 	z: number
-	visibility?: number
 }
 
-export interface MediapipeResult {
-	faceLandmarks: Coordinate[]
-	image: ImageBitmap
-	leftHandLandmarks: Coordinate[]
-	multiFaceGeometry: []
-	poseLandmarks: Coordinate[]
-	rightHandLandmarks: Coordinate[]
-	segmentationMask: ImageBitmap
-	za: Coordinate[]
-}
+export interface CloneableResults
+	extends Omit<Results, 'segmentationMask' | 'image'> {}
 
 export interface AvatarHand {
 	origin: BABYLON.Mesh
@@ -41,4 +33,14 @@ export interface ChairConfig {
 	tableRayon: number
 	membersNumber: number
 	order: number
+}
+
+export interface CameraData {
+	position: Coordinate
+	rotation: Coordinate
+}
+
+export interface HandPosition {
+	origin: Coordinate
+	points: Coordinate[]
 }
