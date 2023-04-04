@@ -6,7 +6,7 @@ import '@babylonjs/loaders/OBJ/objFileLoader'
 
 import type { Results } from '@mediapipe/holistic'
 import * as Comlink from 'comlink'
-import { ref } from 'vue'
+import { ref, toRefs } from 'vue'
 import { useSceneStore } from '@/stores/scene'
 import { useHolisticService } from './services/holistic'
 import type { MediationConfig } from './types/config'
@@ -22,6 +22,7 @@ export async function mediation(
 ) {
 	// Stores
 	const sceneStore = useSceneStore()
+	const { sceneRef } = toRefs(sceneStore)
 
 	// Services
 	const holisticService = useHolisticService()

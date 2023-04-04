@@ -6,14 +6,26 @@ export interface MeshRoom {
 	funct: (meshes: AbstractMesh[], scene: Scene) => void
 }
 
-export interface MeshRoomList {
-	PROTOTYPE_01: MeshRoom
-	PROTOTYPE_02: MeshRoom
-	PROTOTYPE_02_NOTEXTURE: MeshRoom
-}
-
 export enum MeshRoomEnum {
 	PROTOTYPE_01 = 'PROTOTYPE_01',
 	PROTOTYPE_02 = 'PROTOTYPE_02',
 	PROTOTYPE_02_NOTEXTURE = 'PROTOTYPE_02_NOTEXTURE',
+}
+
+export type MeshRoomList = {
+	[key in MeshRoomEnum]: MeshRoom
+}
+
+export interface SkyboxChoice {
+	funct: (scene: Scene) => void
+}
+
+export enum SkyboxEnum {
+	CLEAR_SKY = 'CLEAR_SKY',
+	CLEAR_SKY_GROUND = 'CLEAR_SKY_GROUND',
+	MOUNTAIN = 'MOUNTAIN',
+}
+
+export type SkyboxList = {
+	[key in SkyboxEnum]: SkyboxChoice
 }

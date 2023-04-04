@@ -1,21 +1,20 @@
 import {
 	Engine,
 	FreeCamera,
-	HemisphericLight,
 	Scene,
 	Vector3,
 	type Engine as EngineType,
 	type Scene as SceneType,
-	PhotoDome,
 } from '@babylonjs/core'
 import type * as Comlink from 'comlink'
 import { defineStore } from 'pinia'
 import { ref, computed, toRefs } from 'vue'
-import { Hand } from '@/client/class/hands'
 import { getMaterial } from '@/client/helpers/materials'
 import { getMesh, loadMesh } from '@/client/helpers/mesh'
+import { loadSkybox } from '@/client/helpers/skybox'
 import type { Avatar } from '@/client/types/business'
 import type { MediationConfig } from '@/client/types/config'
+import type { SkyboxEnum } from '@/client/types/meshes'
 import { coordinateToVector3 } from '@/client/utils/converter'
 import type { Pose } from '@/client/workers/pose-processing'
 import { useCameraStore } from './camera'
@@ -55,6 +54,20 @@ export const useSceneStore = defineStore('scene', () => {
 		)
 	}
 
+	function setSkybox(skybox: SkyboxEnum) {
+		if (!scene.value) return
+		const index = scene.value.meshes.findIndex(
+			(mesh) => mesh.name === 'skybox_mesh'
+		)
+		const index2 = scene.value.lights.findIndex(
+			(mesh) => mesh.name === 'light_skybox'
+		)
+		if (index === -1 || index2 === -1) return
+		scene.value.meshes.splice(index, 1)
+		scene.value.lights.splice(index2, 1)
+		loadSkybox(scene.value as Scene, skybox)
+	}
+
 	async function render(
 		canvas: HTMLCanvasElement,
 		remote: Comlink.Remote<Pose>,
@@ -65,15 +78,7 @@ export const useSceneStore = defineStore('scene', () => {
 		const createScene = async () => {
 			scene.value = new Scene(engine.value as EngineType)
 
-			const dome = new PhotoDome(
-				'testdome',
-				'assets/skyboxes/sky.png',
-				{
-					resolution: 32,
-					size: 1000,
-				},
-				scene.value as Scene
-			)
+			loadSkybox(scene.value as Scene, config.skybox)
 
 			const cameraData = await remote.camera
 			// Camera
@@ -87,14 +92,6 @@ export const useSceneStore = defineStore('scene', () => {
 			if (!cameraRef.value) return
 			cameraRef.value.setTarget(Vector3.Zero())
 			cameraRef.value.attachControl(canvas, true)
-
-			// Light
-			const light = new HemisphericLight(
-				'light',
-				new Vector3(-30, 15, 30),
-				scene.value as Scene
-			)
-			light.intensity = 1
 
 			// Avatar
 			// avatar.value = {
@@ -174,6 +171,7 @@ export const useSceneStore = defineStore('scene', () => {
 		avatarRef,
 		membersNumberRef,
 		fpsCounter,
+		setSkybox,
 		render,
 		onHolisticResult,
 	}

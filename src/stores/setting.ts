@@ -1,10 +1,11 @@
 import { defineStore } from 'pinia'
 import { ref, computed } from 'vue'
 import type { Complexity } from '@/client/types/business'
-import type { MeshRoomEnum } from '@/client/types/meshes'
+import type { MeshRoomEnum, SkyboxEnum } from '@/client/types/meshes'
 
 const KEY_HOLISTIC_COMPLEXITY = 'holystic-complexity'
 const KEY_SCENE_ROOM = 'scene-room'
+const KEY_SCENE_SKYBOX = 'scene-skybox'
 
 export const useSettingStore = defineStore('setting', () => {
 	// States
@@ -20,10 +21,16 @@ export const useSettingStore = defineStore('setting', () => {
 			undefined
 	)
 
+	const sceneSkybox = ref<keyof typeof SkyboxEnum | undefined>(
+		(localStorage.getItem(KEY_SCENE_SKYBOX) as keyof typeof SkyboxEnum) ??
+			undefined
+	)
+
 	// Getters
 
 	const holisticComplexityRef = computed(() => holisticComplexity.value)
 	const sceneRoomRef = computed(() => sceneRoom.value)
+	const sceneSkyboxRef = computed(() => sceneSkybox.value)
 
 	// Actions
 
@@ -37,10 +44,17 @@ export const useSettingStore = defineStore('setting', () => {
 		sceneRoom.value = room
 	}
 
+	function setSkybox(skybox: keyof typeof SkyboxEnum) {
+		localStorage.setItem(KEY_SCENE_SKYBOX, skybox)
+		sceneSkybox.value = skybox
+	}
+
 	return {
 		holisticComplexityRef,
 		sceneRoomRef,
+		sceneSkyboxRef,
 		setHolysticComplexity,
 		setSceneRoom,
+		setSkybox,
 	}
 })
