@@ -1,14 +1,20 @@
 import {
 	type StandardMaterial,
 	Vector3,
-	type Mesh,
+	Mesh,
 	MeshBuilder,
 	SceneLoader,
 	AbstractMesh,
+	Animation,
+	ActionManager,
+	ExecuteCodeAction,
+	TransformNode,
+	
+
 } from '@babylonjs/core'
 import type { ChairConfig, Scene } from '@/client/types/business'
 import { MeshRoomEnum, type MeshRoomList } from '@/client/types/meshes'
-import { radToDeg } from '@/client/utils/converter'
+import { degToRad } from '@/client/utils/converter'
 import { getMaterial } from './materials'
 
 // Helpers
@@ -107,13 +113,56 @@ export function loadMesh() {
 	const mediationRoom = (
 		scene: Scene,
 		meshRoom: MeshRoomEnum = MeshRoomEnum.PROTOTYPE_01
-	) => {
+	) => {	
+		const keys : Array<{frame: number, value: float}> = [];
+		keys.push({ frame: 0, value: 0 });
+		keys.push({ frame: 40, value: degToRad(90) });
+
+	
 		SceneLoader.ImportMesh(
 			'',
 			MESHES_REPOSITORY,
 			MESH_ROOM[meshRoom].name,
 			scene,
-			(meshes) => MESH_ROOM[meshRoom].funct(meshes, scene)
+			(meshes) => { 	
+				MESH_ROOM[meshRoom].funct(meshes, scene)
+
+				const door : {interior?: Mesh, glass?: Mesh, handle?: Mesh}  = {};
+				meshes.forEach((meshe)=> {
+					if(meshe.name === 'doorInterior_primitive2')
+						door.interior = meshe as Mesh
+					else if(meshe.name === 'doorInterior_primitive1')
+						door.glass = meshe as Mesh
+					else if(meshe.name === 'doorInterior_primitive0')
+						door.handle = meshe as Mesh
+
+				})
+
+				let doorRotation = new Animation("doorRotation", "rotation.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
+
+				doorRotation.setKeys(keys);
+	
+				door.interior?.animations.push(doorRotation);
+				door.glass?.animations.push(doorRotation);
+				door.handle?.animations.push(doorRotation);
+
+				let open = false;
+				if(door.interior){
+					door.interior.actionManager = new ActionManager(scene);
+					door.interior.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnPickTrigger, function () {
+						if (open) {
+							scene.beginAnimation(door.interior, 40, 0, false);
+							scene.beginAnimation(door.glass, 40, 0, false);
+							scene.beginAnimation(door.handle, 40, 0, false);
+						} else {
+							scene.beginAnimation(door.interior, 0, 40, false);
+							scene.beginAnimation(door.glass, 0, 40, false);
+							scene.beginAnimation(door.handle, 0, 40, false);
+						}
+						open = !open;
+					}));
+				}
+			}
 		)
 	}
 
@@ -128,14 +177,14 @@ export function loadMesh() {
 					meshe.scaling.scaleInPlace(3.6)
 					meshe.position = new Vector3(
 						config.tableRayon *
-							Math.cos(radToDeg((360 / config.membersNumber) * config.order)),
+							Math.cos(degToRad((360 / config.membersNumber) * config.order)),
 						0,
 						config.tableRayon *
-							Math.sin(radToDeg((360 / config.membersNumber) * config.order))
+							Math.sin(degToRad((360 / config.membersNumber) * config.order))
 					)
 					meshe.rotation = new Vector3(
 						0,
-						radToDeg((-360 / config.membersNumber) * config.order),
+						degToRad((-360 / config.membersNumber) * config.order),
 						0
 					)
 					if (meshe.name === 'leather_Cube.002')

@@ -1,7 +1,7 @@
 import { Vector3 } from '@babylonjs/core'
 import type { Coordinate } from '@/client/types/business'
 
-export function radToDeg(deg: number): number {
+export function degToRad(deg: number): number {
 	return deg * (Math.PI / 180)
 }
 

@@ -77,7 +77,7 @@ onMounted(async () => {
 		holisticComplexity: holisticComplexityRef.value,
 	}
 	const core = await mediation(videoElement, canvasElement, canvas, config)
-	core.startHolistic()
+	// core.startHolistic()
 })
 
 function toSkyboxImgURL(name: string): string {
