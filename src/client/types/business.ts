@@ -1,5 +1,5 @@
 import type * as BABYLON from '@babylonjs/core'
-import type { Results } from '@mediapipe/holistic'
+import type { GpuBuffer, Results } from '@mediapipe/holistic'
 import type { Hand } from '@/client/class/hands'
 export interface Coordinate {
 	x: number
@@ -7,8 +7,12 @@ export interface Coordinate {
 	z: number
 }
 
-export interface CloneableResults
-	extends Omit<Results, 'segmentationMask' | 'image'> {}
+export interface CloneablePreResults
+	extends Omit<Results, 'segmentationMask' | 'image'> {
+	image?: GpuBuffer
+}
+
+export interface CloneableResults extends Omit<CloneablePreResults, 'image'> {}
 
 export interface AvatarHand {
 	origin: BABYLON.Mesh
