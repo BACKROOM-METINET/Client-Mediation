@@ -3,12 +3,17 @@ import { ref, computed } from 'vue'
 import type { Complexity } from '@/client/types/business'
 import type { MeshRoomEnum, SkyboxEnum } from '@/client/types/meshes'
 
+const KEY_HOLISTIC = 'holystic-activated'
 const KEY_HOLISTIC_COMPLEXITY = 'holystic-complexity'
 const KEY_SCENE_ROOM = 'scene-room'
 const KEY_SCENE_SKYBOX = 'scene-skybox'
 
 export const useSettingStore = defineStore('setting', () => {
 	// States
+
+	const isCameraPreview = ref<boolean>(
+		localStorage.getItem(KEY_HOLISTIC) === '1' ? true : false
+	)
 
 	const holisticComplexity = ref<Complexity>(
 		Number.parseInt(
@@ -28,11 +33,17 @@ export const useSettingStore = defineStore('setting', () => {
 
 	// Getters
 
+	const isCameraPreviewRef = computed(() => isCameraPreview.value)
 	const holisticComplexityRef = computed(() => holisticComplexity.value)
 	const sceneRoomRef = computed(() => sceneRoom.value)
 	const sceneSkyboxRef = computed(() => sceneSkybox.value)
 
 	// Actions
+
+	function setCameraPreview(activated: boolean) {
+		localStorage.setItem(KEY_HOLISTIC, activated ? '1' : '0')
+		isCameraPreview.value = activated
+	}
 
 	function setHolysticComplexity(complexity: Complexity) {
 		localStorage.setItem(KEY_HOLISTIC_COMPLEXITY, complexity.toString())
@@ -50,9 +61,11 @@ export const useSettingStore = defineStore('setting', () => {
 	}
 
 	return {
+		isCameraPreviewRef,
 		holisticComplexityRef,
 		sceneRoomRef,
 		sceneSkyboxRef,
+		setCameraPreview,
 		setHolysticComplexity,
 		setSceneRoom,
 		setSkybox,
