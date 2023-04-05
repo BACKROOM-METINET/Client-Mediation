@@ -26,7 +26,6 @@ const MESH_ROOM: MeshRoomList = {
 	PROTOTYPE_01: {
 		name: 'meeting-room-v2.obj',
 		funct: (meshes: AbstractMesh[], scene: Scene) => {
-			console.log(meshes)
 			meshes.forEach((meshe) => {
 				meshe.position = new Vector3(-100, -1, 100)
 				meshe.scaling.scaleInPlace(10)

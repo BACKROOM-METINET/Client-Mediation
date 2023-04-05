@@ -8,7 +8,7 @@ import {
 } from '@babylonjs/core'
 import type * as Comlink from 'comlink'
 import { defineStore } from 'pinia'
-import { ref, computed, toRefs } from 'vue'
+import { ref, computed, toRefs, type Ref } from 'vue'
 import { getMaterial } from '@/client/helpers/materials'
 import { getMesh, loadMesh } from '@/client/helpers/mesh'
 import { loadSkybox } from '@/client/helpers/skybox'
@@ -30,11 +30,11 @@ export const useSceneStore = defineStore('scene', () => {
 	const meshesLoader = loadMesh()
 
 	// States
-	const engine = ref<EngineType | null>(null)
-	const scene = ref<SceneType | null>(null)
-	const avatar = ref<Avatar | null>(null)
+	const engine: Ref<EngineType | null> = ref(null)
+	const scene: Ref<SceneType | null> = ref(null)
+	const avatar: Ref<Avatar | null> = ref(null)
 
-	const membersNumber = ref<number>(6)
+	const membersNumber: Ref<number> = ref(6)
 
 	// Getters
 

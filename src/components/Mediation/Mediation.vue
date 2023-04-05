@@ -1,4 +1,3 @@
-<!-- eslint-disable unused-imports/no-unused-vars -->
 <script setup lang="ts">
 import '@babylonjs/core/Debug/debugLayer'
 
@@ -7,41 +6,42 @@ import 'babylonjs-loaders'
 import '@babylonjs/loaders/OBJ/objFileLoader'
 
 import { onMounted, ref, toRefs } from 'vue'
-import { mediation, isLoading } from '@/client/core'
 import type { MediationConfig } from '@/client/types/config'
 import type { MeshRoomEnum, SkyboxEnum } from '@/client/types/meshes'
-import CameraIcon from '@/components/icons/CameraIcon.vue'
-import CloseIcon from '@/components/icons/CloseIcon.vue'
-import EyeIcon from '@/components/icons/EyeIcon.vue'
-import EyeSlashIcon from '@/components/icons/EyeSlashIcon.vue'
-import SettingIcon from '@/components/icons/SettingIcon.vue'
 import MediationOptions from '@/components/MediationOptions/MediationOptions.vue'
-import { useSceneStore } from '@/stores/scene'
+import MediationUI from '@/components/MediationUI/MediationUI.vue'
+import { useMediationStore } from '@/stores/mediation'
 import { useSettingStore } from '@/stores/setting'
 
-const settings = useSettingStore()
+const settingStore = useSettingStore()
 const {
+	isHolisticActivatedRef,
 	holisticComplexityRef,
 	sceneRoomRef,
 	sceneSkyboxRef,
 	isCameraPreviewRef,
-} = toRefs(settings)
-const scene = useSceneStore()
-const { fpsCounter } = toRefs(scene)
-
-const isHolisticActive = ref(true)
+} = toRefs(settingStore)
+const mediationStore = useMediationStore()
+const { isHolisticLoading } = toRefs(mediationStore)
 const isConfigMenuOpen = ref(false)
+
+function openConfigMenu() {
+	isConfigMenuOpen.value = true
+}
 
 function closeConfigMenu() {
 	isConfigMenuOpen.value = false
 }
 
-function openCameraPreview() {
-	settings.setCameraPreview(true)
+function startHolistic() {
+	const videoElement = document.getElementById(
+		'input_video'
+	) as HTMLVideoElement
+	mediationStore.startHolistic(videoElement)
 }
 
-function closeCameraPreview() {
-	settings.setCameraPreview(false)
+function stopHolistic() {
+	mediationStore.stopHolistic()
 }
 
 onMounted(async () => {
@@ -53,73 +53,24 @@ onMounted(async () => {
 		scene: sceneRoomRef.value as MeshRoomEnum,
 		skybox: sceneSkyboxRef.value as SkyboxEnum,
 		holisticComplexity: holisticComplexityRef.value,
+		useHolistic: isHolisticActivatedRef.value,
 	}
-	const core = await mediation(videoElement, canvas, config)
-	core.startHolistic()
+	await mediationStore.start(videoElement, canvas, config)
 })
 </script>
 
 <template>
-	<div class="component position-relative">
-		<div
-			class="position-absolute over-cam cam"
-			:class="{ hide: !isCameraPreviewRef }">
+	<div class="mediation position-relative">
+		<MediationUI
+			:is-config-menu-open="isConfigMenuOpen"
+			:is-camera-preview-active="isCameraPreviewRef"
+			:is-holistic-activated="isHolisticActivatedRef"
+			:is-holistic-loading="isHolisticLoading"
+			@open-config="openConfigMenu()"
+			@enable-holistic="startHolistic()"
+			@disable-holistic="stopHolistic()">
 			<video id="input_video"></video>
-			<button id="btn-close-cam" type="button" @click="closeCameraPreview()">
-				<CloseIcon></CloseIcon>
-			</button>
-		</div>
-		<button
-			id="btn-open-cam"
-			type="button"
-			class="position-absolute over-cam over-item"
-			:class="{ hide: isCameraPreviewRef }"
-			@click="openCameraPreview()">
-			<CameraIcon></CameraIcon>
-		</button>
-		<div class="position-absolute option-list">
-			<ul>
-				<li v-if="isLoading">
-					<div class="over-item" title="Mediapipe Holistic Loading">
-						<span
-							class="spinner-border spinner-border-sm text-dark"
-							role="status"
-							aria-hidden="true"></span>
-					</div>
-				</li>
-				<li>
-					<button
-						id="btn-open-cam"
-						type="button"
-						class="over-item"
-						title="Settings Menu"
-						@click="isConfigMenuOpen = true">
-						<SettingIcon></SettingIcon>
-					</button>
-				</li>
-				<li>
-					<button
-						v-if="isHolisticActive"
-						id="btn-open-cam"
-						type="button"
-						class="over-item"
-						title="Mediapipe View Disable"
-						@click="isHolisticActive = false">
-						<EyeSlashIcon></EyeSlashIcon>
-					</button>
-					<button
-						v-else
-						id="btn-open-cam"
-						type="button"
-						class="over-item"
-						title="Mediapipe View Enable"
-						@click="isHolisticActive = true">
-						<EyeIcon></EyeIcon>
-					</button>
-				</li>
-			</ul>
-		</div>
-		<div class="fps-counter">{{ fpsCounter }} fps</div>
+		</MediationUI>
 		<MediationOptions
 			:is-open="isConfigMenuOpen"
 			@close="closeConfigMenu()"></MediationOptions>
@@ -127,4 +78,4 @@ onMounted(async () => {
 	</div>
 </template>
 
-<style scoped src="./NewUI.scss"></style>
+<style scoped src="./Mediation.scss"></style>

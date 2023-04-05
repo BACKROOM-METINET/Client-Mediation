@@ -1,76 +1,10 @@
-* {
-	margin: 0;
-	box-sizing: border-box;
-}
+.mediation {
+    width: 100vw;
+    height: 100vh;
+    overflow: hidden;
 
-.component {
-	width: 100vw;
-	height: 100vh;
-	overflow: hidden;
-
-	#renderCanvas {
-		width: 100%;
-		height: 100%;
-	}
-
-	.over-cam {
-		bottom: 20px;
-		left: 20px;
-		z-index: 99;
-	}
-
-	.cam {
-		height: 200px;
-		display: flex;
-	}
-
-	#btn-close-cam {
-		background-color: #0000;
-		border: none;
-		width: 40px;
-		height: 40px;
-		margin-top: auto;
-	}
-
-	#btn-open-cam {
-		margin-top: auto;
-
-		&:hover {
-			background-color: #DDD;
-		}
-	}
-
-	.over-item {
-		background-color: #FFF;
-		border-radius: 10px;
-		border: none;
-		width: 40px;
-		height: 40px;
-		display: flex;
-		align-items: center;
-		justify-content: center;
-	}
-
-	.option-list {
-		top: 20px;
-		left: 20px;
-		z-index: 99;
-
-		ul {
-			list-style: none;
-			padding: 0;
-
-			li {
-				margin-bottom: 10px;
-			}
-		}
-	}
-
-	.fps-counter {
-		position: absolute;
-		z-index: 120;
-		bottom: 20px;
-		right: 20px;
-	}
-
+    #renderCanvas {
+        width: 100%;
+        height: 100%;
+    }
 }

@@ -2,7 +2,8 @@
 import { computed, ref, toRefs } from 'vue'
 import type { Complexity } from '@/client/types/business'
 import { MeshRoomEnum, SkyboxEnum } from '@/client/types/meshes'
-import { useSceneStore } from '@/stores/scene'
+import CloseIcon from '@/components/icons/CloseIcon.vue'
+import { useSceneStore } from '@/stores/babylon-js/scene'
 import { useSettingStore } from '@/stores/setting'
 
 const settings = useSettingStore()
@@ -131,4 +132,4 @@ function close() {
 	</div>
 </template>
 
-<style scoped src="./MediationConfig.scss"></style>
+<style scoped src="./MediationOptions.scss"></style>
