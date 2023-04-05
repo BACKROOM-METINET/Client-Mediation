@@ -92,7 +92,6 @@ export const useSceneStore = defineStore('scene', () => {
 			if (!cameraRef.value) return
 			cameraRef.value.setTarget(Vector3.Zero())
 			cameraRef.value.attachControl(canvas, true)
-
 			// Avatar
 			// avatar.value = {
 			// 	hands: {
@@ -131,6 +130,11 @@ export const useSceneStore = defineStore('scene', () => {
 					tableRayon: tableRayon,
 				})
 			}
+
+			setTimeout(async() => {
+				await meshesLoader.character(scene.value as Scene)
+			}, 10000 );
+
 
 			return sceneRef.value
 		}

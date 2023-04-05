@@ -9,6 +9,7 @@ import {
 	ActionManager,
 	ExecuteCodeAction,
 	TransformNode,
+	AnimationGroup,
 	
 
 } from '@babylonjs/core'
@@ -39,9 +40,10 @@ const MESH_ROOM: MeshRoomList = {
 		funct: (meshes: AbstractMesh[]) => {
 			meshes.forEach((meshe) => {
 				if (meshe.name !== '__root__') return
-				meshe.position.x += 15
-				meshe.position.y += -0.5
-				meshe.position.z += 15
+				meshe.position.x += 18
+				meshe.position.y += -0.7
+				meshe.position.z += 17
+				meshe.scaling.scaleInPlace(1.15)
 			})
 		},
 	},
@@ -114,7 +116,7 @@ export function loadMesh() {
 		scene: Scene,
 		meshRoom: MeshRoomEnum = MeshRoomEnum.PROTOTYPE_01
 	) => {	
-		const keys : Array<{frame: number, value: float}> = [];
+		const keys : Array<{frame: number, value: GLfloat}> = [];
 		keys.push({ frame: 0, value: 0 });
 		keys.push({ frame: 40, value: degToRad(90) });
 
@@ -135,10 +137,9 @@ export function loadMesh() {
 						door.glass = meshe as Mesh
 					else if(meshe.name === 'doorInterior_primitive0')
 						door.handle = meshe as Mesh
-
 				})
 
-				let doorRotation = new Animation("doorRotation", "rotation.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
+				const doorRotation = new Animation("doorRotation", "rotation.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
 
 				doorRotation.setKeys(keys);
 	
@@ -147,7 +148,7 @@ export function loadMesh() {
 				door.handle?.animations.push(doorRotation);
 
 				let open = false;
-				if(door.interior){
+				if(door.interior) {
 					door.interior.actionManager = new ActionManager(scene);
 					door.interior.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnPickTrigger, function () {
 						if (open) {
@@ -205,8 +206,86 @@ export function loadMesh() {
 			}
 		)
 	}
+
+
+
+	const character = async (scene: Scene) => {
+		const door = scene.meshes.find((mesh) => mesh.name === 'doorInterior_primitive2'); 
+		const doorPosition = door?.getAbsolutePosition() || new Vector3();
+		
+		const { meshes, animationGroups } = await SceneLoader.ImportMeshAsync(
+			"",
+			MESHES_REPOSITORY,
+			"avatar-walkinplace.glb"
+		);
+
+		const avatar = meshes[0];
+
+		avatar.scaling.scaleInPlace(5.7);
+		avatar.rotation.y = degToRad(90);
+
+		console.log({before : avatar.getAbsolutePosition()});
+		avatar.setAbsolutePosition(new Vector3((doorPosition.x) + 2, doorPosition.y, (doorPosition.z) + 15));
+		console.log({after : avatar.getAbsolutePosition()});
+
+
+		// meshes.forEach((mesh) => {
+		// 	mesh.scaling.scaleInPlace(5.7);
+		// 	mesh.rotation.y = degToRad(90);
+		// 	if(mesh.name !== '__root__') return  ;
+		// 	if(door){
+		// 		console.log({before : mesh.getAbsolutePosition()});
+
+		// 		mesh.setAbsolutePosition(new Vector3((doorPosition.x) + 2, doorPosition.y, (doorPosition.z) + 15));
+
+		// 		console.log({after : mesh.getAbsolutePosition()});
+		// 	}
+			
+		// })
+	
+		console.log({doorPosition})
+	
+		door && characterWalk(scene, animationGroups[0], avatar.getAbsolutePosition(), doorPosition)
+	}
+
+	const characterWalk = (scene: Scene, animation: AnimationGroup, manPos: Vector3, finalPos: Vector3) => {
+		
+		const dist = new Vector3(finalPos.x - manPos.x, 0 , finalPos.z - manPos.z) 
+
+		console.log({finalPos})
+		console.log({manPos})
+		console.log({dist});
+
+		//Wolf3D_Avatar
+		// const keys : Array<{frame: number, value: Vector3}> = [];
+		// keys.push({ frame: 0, value: new Vector3(0,0,0) });
+		// keys.push({ frame: 40, value: dist });
+
+		// // animation.start();
+
+
+		// const characterTranslation = new Animation("walkTranslation", "position", 30, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+
+		// characterTranslation.setKeys(keys);
+
+		// avatar.animations.push(characterTranslation);
+
+		// avatar.actionManager = new ActionManager(scene);
+		// avatar.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnPickTrigger, function () {
+		// 	scene.beginAnimation(avatar, 0, 40, false);
+
+		// }));
+		
+		// 	animation.stop();
+
+		
+	}
+
 	return {
 		mediationRoom,
 		chairAroundTable,
+		character,
+		
 	}
 }
+
