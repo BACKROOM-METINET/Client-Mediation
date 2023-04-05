@@ -1,6 +1,7 @@
 import type { Nullable } from '@babylonjs/core'
 import type { NormalizedLandmarkList } from '@mediapipe/holistic'
 import * as Comlink from 'comlink'
+import { Face } from 'kalidokit'
 import type {
 	CameraData,
 	CloneableResults,
@@ -8,25 +9,15 @@ import type {
 	HandPosition,
 } from '@/client/types/business'
 
-function calculRotateY(coords: NormalizedLandmarkList) {
-	return (
-		(((coords[0].x - coords[8].x) * 100) / (coords[7].x - coords[8].x) - 50) /
-		-100
-	)
-}
-
-function calculRotateX(coords: NormalizedLandmarkList) {
-	return (
-		((coords[4].y + coords[1].y) / 2 - (coords[8].y + coords[7].y) / 2 + 0.02) *
-		10
-	)
-}
+const SENSIBILITY = 5
 
 export class Pose {
 	public cloneableInputResults: Nullable<CloneableResults> = null
 	public camera: CameraData
 	public handLeft: HandPosition
 	public handRight: HandPosition
+	private historyCamX: number[] = []
+	private historyCamY: number[] = []
 	constructor() {
 		this.camera = {
 			position: { x: 0, y: 5, z: -10 },
@@ -41,12 +32,21 @@ export class Pose {
 			points: [],
 		}
 	}
+	private camPositionAverage(newNum: number, history: number[]): number {
+		if (history.length >= SENSIBILITY) history.shift()
+		history.push(newNum)
+		return history.reduce((a, b) => a + b, newNum) / history.length
+	}
 	private updateCamera(results: CloneableResults) {
-		if (!results?.poseLandmarks) return
-		const coords = results.poseLandmarks
+		if (!results?.faceLandmarks) return
+		const rig = Face.solve(results.faceLandmarks, {
+			runtime: 'mediapipe',
+		})
+		const x = (rig?.head.x ?? 0) * -1 - 0.1
+		const y = rig?.head.y ?? 0
 		this.camera.rotation = {
-			x: calculRotateX(coords),
-			y: calculRotateY(coords),
+			x: this.camPositionAverage(x, this.historyCamX),
+			y: this.camPositionAverage(y, this.historyCamY),
 			z: 0,
 		}
 	}

@@ -147,22 +147,8 @@ export const useSceneStore = defineStore('scene', () => {
 		remote.camera.then((_camera) =>
 			cameraStore.setCameraRotation(_camera.rotation.x, _camera.rotation.y)
 		)
-		remote.handLeft.then((hand) => avatarRef.value?.hands.left.update(hand))
-		remote.handRight.then((hand) => avatarRef.value?.hands.right.update(hand))
-		// if (cameraRef.value) {
-		// 	if (results.leftHandLandmarks) {
-		// 		avatarRef.value?.hands.left.updateEvent(
-		// 			cameraRef.value as Camera,
-		// 			results.leftHandLandmarks
-		// 		)
-		// 	}
-		// 	if (results.rightHandLandmarks) {
-		// 		avatarRef.value?.hands.right.updateEvent(
-		// 			cameraRef.value as Camera,
-		// 			results.rightHandLandmarks
-		// 		)
-		// 	}
-		// }
+		// remote.handLeft.then((hand) => avatarRef.value?.hands.left.update(hand))
+		// remote.handRight.then((hand) => avatarRef.value?.hands.right.update(hand))
 	}
 
 	return {

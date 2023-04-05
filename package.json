@@ -32,6 +32,7 @@
     "@mediapipe/holistic": "^0.5.1675471629",
     "babylonjs-loaders": "^5.50.0",
     "comlink": "^4.4.1",
+    "kalidokit": "^1.1.5",
     "pinia": "^2.0.28",
     "vue": "^3.2.45",
     "vue-router": "^4.1.6"
