@@ -10,6 +10,8 @@ import {
 	ExecuteCodeAction,
 	TransformNode,
 	AnimationGroup,
+	Space,
+	Axis
 	
 
 } from '@babylonjs/core'
@@ -219,67 +221,83 @@ export function loadMesh() {
 			"avatar-walkinplace.glb"
 		);
 
-		const avatar = meshes[0];
+		const avatar = meshes[1];
 
-		avatar.scaling.scaleInPlace(5.7);
-		avatar.rotation.y = degToRad(90);
+		meshes.forEach((mesh) => {
+			mesh.scaling.scaleInPlace(5.7);
+			mesh.rotation.y = degToRad(90);
+			mesh.setAbsolutePosition(doorPosition);
+			mesh.translate(Axis.X, 5, Space.WORLD);
+			mesh.translate(Axis.Z, 1.5, Space.WORLD);
+		})
 
-		console.log({before : avatar.getAbsolutePosition()});
-		avatar.setAbsolutePosition(new Vector3((doorPosition.x) + 2, doorPosition.y, (doorPosition.z) + 15));
-		console.log({after : avatar.getAbsolutePosition()});
+		const tablePosition = scene.meshes.find((mesh) => mesh.name === 'tableBottom')?.getAbsolutePosition();
+
+		if(tablePosition){
+
+			const firstPos = new Vector3(doorPosition.x - 10, doorPosition.y, doorPosition.z + 1.5);
+
+			const dist1 = new Vector3(Math.abs(firstPos.x - avatar.getAbsolutePosition().x), 0 ,Math.abs(firstPos.z - avatar.getAbsolutePosition().z));
 
 
-		// meshes.forEach((mesh) => {
-		// 	mesh.scaling.scaleInPlace(5.7);
-		// 	mesh.rotation.y = degToRad(90);
-		// 	if(mesh.name !== '__root__') return  ;
-		// 	if(door){
-		// 		console.log({before : mesh.getAbsolutePosition()});
+			const sncdPos = new Vector3(tablePosition.x, tablePosition.y, tablePosition.z + 1.5);
+			const dist2 = new Vector3(Math.abs(sncdPos.x - avatar.getAbsolutePosition().x), 0 ,Math.abs(sncdPos.z - avatar.getAbsolutePosition().z));
 
-		// 		mesh.setAbsolutePosition(new Vector3((doorPosition.x) + 2, doorPosition.y, (doorPosition.z) + 15));
-
-		// 		console.log({after : mesh.getAbsolutePosition()});
-		// 	}
+			const animationKeys : Array<{frame: number, value: Vector3}> = [];
+			animationKeys.push({ frame: 0, value: new Vector3(0,0,0) });
+			animationKeys.push({ frame: 40, value: dist1 });
 			
-		// })
 	
-		console.log({doorPosition})
-	
-		door && characterWalk(scene, animationGroups[0], avatar.getAbsolutePosition(), doorPosition)
+			const animationKeys2 : Array<{frame: number, value: Vector3}> = [];
+			animationKeys.push({ frame: 90, value: dist2 });
+		
+
+			await characterMovement(scene, animationGroups[0], avatar, animationKeys, animationKeys2)
+		}
 	}
 
-	const characterWalk = (scene: Scene, animation: AnimationGroup, manPos: Vector3, finalPos: Vector3) => {
+	const characterMovement = async(scene: Scene, animation: AnimationGroup, avatar: AbstractMesh | Mesh, animationKeys1: Array<{frame: number, value: Vector3}>, animationKeys2 :  Array<{frame: number, value: Vector3}>) => {
+	
+		console.log('PASSAGE')
+
+		const keys : Array<{frame: number, value: Vector3}> = animationKeys1;
+		const keys2 : Array<{frame: number, value: Vector3}> = animationKeys2;
 		
-		const dist = new Vector3(finalPos.x - manPos.x, 0 , finalPos.z - manPos.z) 
+		const characterTranslation = new Animation("walkTranslation", "position", 30, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
 
-		console.log({finalPos})
-		console.log({manPos})
-		console.log({dist});
+		characterTranslation.setKeys(keys);
 
-		//Wolf3D_Avatar
-		// const keys : Array<{frame: number, value: Vector3}> = [];
-		// keys.push({ frame: 0, value: new Vector3(0,0,0) });
-		// keys.push({ frame: 40, value: dist });
+		const characterTranslation2 = new Animation("walkTranslation", "position", 30, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
 
-		// // animation.start();
+		characterTranslation2.setKeys(keys);
 
+		const rotationkeys : Array<{frame: number, value: GLfloat}> = [];
+	
+		rotationkeys.push({ frame: 120, value: degToRad(45) });
 
-		// const characterTranslation = new Animation("walkTranslation", "position", 30, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+		const characterRotation = new Animation("walkRotation", "rotation.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
 
-		// characterTranslation.setKeys(keys);
+		characterRotation.setKeys(rotationkeys);
 
-		// avatar.animations.push(characterTranslation);
+		avatar.animations.push(characterTranslation);
+		avatar.animations.push(characterRotation);
+		avatar.animations.push(characterTranslation2);
 
-		// avatar.actionManager = new ActionManager(scene);
-		// avatar.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnPickTrigger, function () {
-		// 	scene.beginAnimation(avatar, 0, 40, false);
+		avatar.actionManager = new ActionManager(scene); 
+		avatar.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnPickTrigger, async function () {
 
-		// }));
-		
-		// 	animation.stop();
+			const anim1 = scene.beginAnimation(avatar, 0, 40, false)
+			await anim1.waitAsync();
+			const anim2 = scene.beginAnimation(avatar, 40, 90, false)
+			await anim2.waitAsync();
+			const anim3 = scene.beginAnimation(avatar, 90, 120, false)
+			await anim3.waitAsync();
 
+			
+		}));
 		
 	}
+
 
 	return {
 		mediationRoom,
