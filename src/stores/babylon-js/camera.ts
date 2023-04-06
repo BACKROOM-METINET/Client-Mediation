@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, type Ref } from 'vue'
 import type { Camera } from '@/client/types/business'
 
 export const useCameraStore = defineStore('camera', () => {
 	// States
 
-	const camera = ref<Camera | null>(null)
+	const camera: Ref<Camera | null> = ref(null)
 
 	// Getters
 
