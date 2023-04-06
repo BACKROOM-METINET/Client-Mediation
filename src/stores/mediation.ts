@@ -112,7 +112,6 @@ export const useMediationStore = defineStore('mediation', () => {
 	}
 
 	function startHolistic(videoSource: HTMLVideoElement) {
-		// startExpressionConnection()
 		holisticStore.start(videoSource, async (results) => {
 			delete results.image
 			if (!results.poseLandmarks) return
@@ -120,6 +119,7 @@ export const useMediationStore = defineStore('mediation', () => {
 				sceneStore.onHolisticResult(poseWorker.value as Comlink.Remote<Pose>)
 			})
 		})
+		startExpressionConnection(videoSource)
 	}
 
 	function stopHolistic() {
