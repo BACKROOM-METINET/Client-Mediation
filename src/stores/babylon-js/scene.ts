@@ -65,7 +65,7 @@ export const useSceneStore = defineStore('scene', () => {
 		if (index === -1 || index2 === -1) return
 		scene.value.meshes.splice(index, 1)
 		scene.value.lights.splice(index2, 1)
-		loadSkybox(scene.value as Scene, skybox)
+		loadSkybox(scene.value, skybox)
 	}
 
 	async function render(
@@ -78,7 +78,7 @@ export const useSceneStore = defineStore('scene', () => {
 		const createScene = async () => {
 			scene.value = new Scene(engine.value as EngineType)
 
-			loadSkybox(scene.value as Scene, config.skybox)
+			loadSkybox(scene.value, config.skybox)
 
 			const cameraData = await remote.camera
 			// Camera
@@ -86,7 +86,7 @@ export const useSceneStore = defineStore('scene', () => {
 				new FreeCamera(
 					'camera1',
 					coordinateToVector3(cameraData.position),
-					scene.value as Scene
+					scene.value
 				)
 			)
 			if (!cameraRef.value) return
