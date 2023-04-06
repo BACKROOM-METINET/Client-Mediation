@@ -103,7 +103,6 @@ export const useMediationStore = defineStore('mediation', () => {
 		}
 
 		webSocketExpression.onmessage = (event) => {
-			// console.log('@Message', event.data)
 			const msg = JSON.parse(event.data)
 			if (msg.event === '@ExpressionResult') {
 				expression.value = msg.result ?? 'Neutral'
