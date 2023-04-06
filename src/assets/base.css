@@ -72,3 +72,13 @@ body {
   -webkit-font-smoothing: antialiased;
   -moz-osx-font-smoothing: grayscale;
 }
+
+.position-relative {
+	position: relative;
+}
+.position-absolute {
+	position: absolute;
+}
+.hide {
+	display: none !important;
+}
