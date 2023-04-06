@@ -14,6 +14,11 @@ const router = createRouter({
 					name: 'new-ui',
 					component: () => import('../components/NewUI/NewUI.vue'),
 				},
+				{
+					path: '/visio',
+					name: 'visio',
+					component: () => import('../components/Visio/Visio.vue'),
+				},
 			],
 		},
 	],
