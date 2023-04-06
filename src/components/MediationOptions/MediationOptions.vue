@@ -62,7 +62,7 @@ function close() {
 }
 </script>
 <template>
-	<div>
+	<div class="mediation-options">
 		<div
 			id="settings-menu"
 			class="position-absolute"
@@ -124,7 +124,12 @@ function close() {
 					</div>
 				</div>
 
-				<button id="btn-close-settings" type="button" @click="close()">
+				<button
+					id="btn-close-settings"
+					type="button"
+					title="Fermer le menu options"
+					class="btn btn-light"
+					@click="close()">
 					<CloseIcon></CloseIcon>
 				</button>
 			</div>
