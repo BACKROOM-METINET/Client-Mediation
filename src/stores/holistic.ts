@@ -24,7 +24,6 @@ export const useHolisticStore = defineStore('holistic', () => {
 	// States
 
 	const videoElement: Ref<HTMLVideoElement | null> = ref(null)
-	const camera: Ref<Camera | null> = ref(null)
 
 	let holistic: Holistic | null = null
 	const holisticState: Ref<number> = ref(0)
@@ -159,9 +158,7 @@ export const useHolisticStore = defineStore('holistic', () => {
 	}
 	function close() {
 		holistic?.close()
-		camera.value?.stop()
 		holistic = null
-		camera.value = null
 		holisticState.value = 0
 	}
 	return { stateRef, start, reset, close }
