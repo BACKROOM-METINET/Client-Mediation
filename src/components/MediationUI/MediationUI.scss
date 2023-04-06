@@ -15,11 +15,12 @@
     }
 
     #btn-close-cam {
-        background-color: #0000;
-        border: none;
-        width: 40px;
-        height: 40px;
         margin-top: auto;
+        margin-left: 10px;
+
+        &:hover {
+            background-color: #DDD;
+        }
     }
 
     #btn-open-cam {

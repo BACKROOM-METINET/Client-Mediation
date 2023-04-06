@@ -1,7 +1,7 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
 import CameraIcon from '@/components/icons/CameraIcon.vue'
-import CloseIcon from '@/components/icons/CloseIcon.vue'
+import CameraOffIcon from '@/components/icons/CameraOffIcon.vue'
 import EyeIcon from '@/components/icons/EyeIcon.vue'
 import EyeSlashIcon from '@/components/icons/EyeSlashIcon.vue'
 import SettingIcon from '@/components/icons/SettingIcon.vue'
@@ -53,8 +53,12 @@ function disableHolistic() {
 			class="position-absolute over-cam cam"
 			:class="{ hide: !isCameraPreviewActive }">
 			<slot></slot>
-			<button id="btn-close-cam" type="button" @click="closeCameraPreview()">
-				<CloseIcon></CloseIcon>
+			<button
+				id="btn-close-cam"
+				class="over-item"
+				type="button"
+				@click="closeCameraPreview()">
+				<CameraOffIcon></CameraOffIcon>
 			</button>
 		</div>
 		<button
