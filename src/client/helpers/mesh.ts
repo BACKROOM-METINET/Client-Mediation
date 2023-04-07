@@ -212,8 +212,9 @@ export function loadMesh() {
 
 
 	const character = async (scene: Scene) => {
-		const door = scene.meshes.find((mesh) => mesh.name === 'doorInterior_primitive2'); 
-		const doorPosition = door?.getAbsolutePosition() || new Vector3();
+		const doorPosition = scene.meshes.find((mesh) => mesh.name === 'doorInterior_primitive2')?.getAbsolutePosition(); 
+		const tablePosition = scene.meshes.find((mesh) => mesh.name === 'tableBottom')?.getAbsolutePosition();
+
 		
 		const { meshes, animationGroups } = await SceneLoader.ImportMeshAsync(
 			"",
@@ -223,87 +224,77 @@ export function loadMesh() {
 
 		const avatar = meshes[1];
 
-		meshes.forEach((mesh) => {
-			mesh.scaling.scaleInPlace(5.7);
-			mesh.rotation.y = degToRad(90);
-			mesh.setAbsolutePosition(doorPosition);
-			mesh.translate(Axis.X, 5, Space.WORLD);
-			mesh.translate(Axis.Z, 1.5, Space.WORLD);
-		})
+		if(tablePosition && doorPosition){
+			meshes.forEach((mesh) => {
+				mesh.scaling.scaleInPlace(5.7);
+				mesh.rotation.y = degToRad(90);
+				mesh.setAbsolutePosition(doorPosition);
+				mesh.translate(Axis.X, 5, Space.WORLD);
+				mesh.translate(Axis.Z, 1.5, Space.WORLD);
+			})
 
-		const tablePosition = scene.meshes.find((mesh) => mesh.name === 'tableBottom')?.getAbsolutePosition();
-
-		if(tablePosition){
-
-			const firstPos = new Vector3(doorPosition.x - 10, doorPosition.y, doorPosition.z + 1.5);
-
-			const dist1 = new Vector3(Math.abs(firstPos.x - avatar.getAbsolutePosition().x), 0 ,Math.abs(firstPos.z - avatar.getAbsolutePosition().z));
+			const frontDoorPos = new Vector3(doorPosition.x - 10, doorPosition.y, doorPosition.z + 1.5);
+			const distTranslation1 = new Vector3(Math.abs(frontDoorPos.x - avatar.getAbsolutePosition().x), 0 ,Math.abs(frontDoorPos.z - avatar.getAbsolutePosition().z));
 
 
-			const sncdPos = new Vector3(tablePosition.x, tablePosition.y, tablePosition.z + 1.5);
-			const dist2 = new Vector3(Math.abs(sncdPos.x - avatar.getAbsolutePosition().x), 0 ,Math.abs(sncdPos.z - avatar.getAbsolutePosition().z));
+			const BehindTablePos = new Vector3(tablePosition.x, tablePosition.y, tablePosition.z + 1.5);
+			const distTranslation2 = new Vector3(Math.abs(BehindTablePos.x - avatar.getAbsolutePosition().x), 0 ,Math.abs(BehindTablePos.z - avatar.getAbsolutePosition().z));
 
-			const animationKeys : Array<{frame: number, value: Vector3}> = [];
-			animationKeys.push({ frame: 0, value: new Vector3(0,0,0) });
-			animationKeys.push({ frame: 40, value: dist1 });
-			
-	
-			const animationKeys2 : Array<{frame: number, value: Vector3}> = [];
-			animationKeys.push({ frame: 90, value: dist2 });
-		
 
-			await characterMovement(scene, animationGroups[0], avatar, animationKeys, animationKeys2)
+			characterMovement(scene, animationGroups[0], avatar, distTranslation1, distTranslation2)
 		}
 	}
 
-	const characterMovement = async(scene: Scene, animation: AnimationGroup, avatar: AbstractMesh | Mesh, animationKeys1: Array<{frame: number, value: Vector3}>, animationKeys2 :  Array<{frame: number, value: Vector3}>) => {
+	const characterMovement = (scene: Scene, animation: AnimationGroup, avatar: AbstractMesh | Mesh, distTranslation1 : Vector3, distTranslation2 : Vector3) => {
 	
 		console.log('PASSAGE')
 
-		const keys : Array<{frame: number, value: Vector3}> = animationKeys1;
-		const keys2 : Array<{frame: number, value: Vector3}> = animationKeys2;
+		const translation1Keys : Array<{frame: number, value: Vector3}> = [];
+		translation1Keys.push({ frame: 0, value: new Vector3(0,0,0) });
+		translation1Keys.push({ frame: 40, value: distTranslation1 });
+		
+		const rotationkeys : Array<{frame: number, value: GLfloat}> = [];
+		rotationkeys.push({ frame: 40, value: degToRad(90) });
+		rotationkeys.push({ frame: 60, value: degToRad(45) });
+
+		const translation2Keys : Array<{frame: number, value: Vector3}> = [];
+		translation2Keys.push({ frame: 60, value: distTranslation1 });
+		translation2Keys.push({ frame: 100, value: distTranslation2 });
+
 		
 		const characterTranslation = new Animation("walkTranslation", "position", 30, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
-
-		characterTranslation.setKeys(keys);
-
-		const characterTranslation2 = new Animation("walkTranslation", "position", 30, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
-
-		characterTranslation2.setKeys(keys);
-
-		const rotationkeys : Array<{frame: number, value: GLfloat}> = [];
-	
-		rotationkeys.push({ frame: 120, value: degToRad(45) });
+		characterTranslation.setKeys(translation1Keys);
 
 		const characterRotation = new Animation("walkRotation", "rotation.y", 30, Animation.ANIMATIONTYPE_FLOAT, Animation.ANIMATIONLOOPMODE_CYCLE);
-
 		characterRotation.setKeys(rotationkeys);
+
+		const characterTranslation2 = new Animation("walkTranslation", "position", 30, Animation.ANIMATIONTYPE_VECTOR3, Animation.ANIMATIONLOOPMODE_CYCLE);
+		characterTranslation2.setKeys(translation2Keys);
 
 		avatar.animations.push(characterTranslation);
 		avatar.animations.push(characterRotation);
 		avatar.animations.push(characterTranslation2);
 
 		avatar.actionManager = new ActionManager(scene); 
-		avatar.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnPickTrigger, async function () {
-
-			const anim1 = scene.beginAnimation(avatar, 0, 40, false)
-			await anim1.waitAsync();
-			const anim2 = scene.beginAnimation(avatar, 40, 90, false)
-			await anim2.waitAsync();
-			const anim3 = scene.beginAnimation(avatar, 90, 120, false)
-			await anim3.waitAsync();
-
+		avatar.actionManager.registerAction(new ExecuteCodeAction(ActionManager.OnPickTrigger, function () {
+			// TypeError ??
 			
-		}));
-		
+			try{
+				animation.start()
+				scene.beginAnimation(avatar, 0, 100, false, undefined, () => {
+					console.log('FIN DE TRANSLATION')
+					animation.stop()
+				}) 
+			}catch(e){
+				// do nothing 
+			}
+		}));	
 	}
-
 
 	return {
 		mediationRoom,
 		chairAroundTable,
 		character,
-		
 	}
 }
 
