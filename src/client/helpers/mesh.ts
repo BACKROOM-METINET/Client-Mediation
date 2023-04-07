@@ -8,6 +8,10 @@ import {
 	Animation,
 	ActionManager,
 	ExecuteCodeAction,
+	TransformNode,
+	Axis,
+	Space,
+	AnimationGroup,
 } from '@babylonjs/core'
 import type { ChairConfig, Scene } from '@/client/types/business'
 import { MeshRoomEnum, type MeshRoomList } from '@/client/types/meshes'
@@ -35,9 +39,10 @@ const MESH_ROOM: MeshRoomList = {
 		funct: (meshes: AbstractMesh[]) => {
 			meshes.forEach((meshe) => {
 				if (meshe.name !== '__root__') return
-				meshe.position.x += 15
-				meshe.position.y += -0.5
-				meshe.position.z += 15
+				meshe.position.x += 18
+				meshe.position.y += -0.7
+				meshe.position.z += 17
+				meshe.scaling.scaleInPlace(1.15)
 			})
 		},
 	},
@@ -132,7 +137,7 @@ export function loadMesh() {
 						door.handle = meshe as Mesh
 				})
 
-				const doorRotation = new Animation(
+				let doorRotation = new Animation(
 					'doorRotation',
 					'rotation.y',
 					30,
@@ -207,8 +212,137 @@ export function loadMesh() {
 			}
 		)
 	}
+
+	const character = async (scene: Scene) => {
+		const doorPosition = scene.meshes
+			.find((mesh) => mesh.name === 'doorInterior_primitive2')
+			?.getAbsolutePosition()
+		const tablePosition = scene.meshes
+			.find((mesh) => mesh.name === 'tableBottom')
+			?.getAbsolutePosition()
+
+		const { meshes, animationGroups } = await SceneLoader.ImportMeshAsync(
+			'',
+			MESHES_REPOSITORY,
+			'avatar-walkinplace.glb'
+		)
+
+		const avatar = meshes[1]
+
+		if (tablePosition && doorPosition) {
+			meshes.forEach((mesh) => {
+				mesh.scaling.scaleInPlace(5.7)
+				mesh.rotation.y = degToRad(90)
+				mesh.setAbsolutePosition(doorPosition)
+				mesh.translate(Axis.X, 5, Space.WORLD)
+				mesh.translate(Axis.Z, 1.5, Space.WORLD)
+			})
+
+			const frontDoorPos = new Vector3(
+				doorPosition.x - 10,
+				doorPosition.y,
+				doorPosition.z + 1.5
+			)
+			const distTranslation1 = new Vector3(
+				Math.abs(frontDoorPos.x - avatar.getAbsolutePosition().x),
+				0,
+				Math.abs(frontDoorPos.z - avatar.getAbsolutePosition().z)
+			)
+
+			const BehindTablePos = new Vector3(
+				tablePosition.x,
+				tablePosition.y,
+				tablePosition.z + 1.5
+			)
+			const distTranslation2 = new Vector3(
+				Math.abs(BehindTablePos.x - avatar.getAbsolutePosition().x),
+				0,
+				Math.abs(BehindTablePos.z - avatar.getAbsolutePosition().z)
+			)
+
+			characterMovement(
+				scene,
+				animationGroups[0],
+				avatar,
+				distTranslation1,
+				distTranslation2
+			)
+		}
+	}
+
+	const characterMovement = (
+		scene: Scene,
+		animation: AnimationGroup,
+		avatar: AbstractMesh | Mesh,
+		distTranslation1: Vector3,
+		distTranslation2: Vector3
+	) => {
+		console.log('PASSAGE')
+
+		const translation1Keys: Array<{ frame: number; value: Vector3 }> = []
+		translation1Keys.push({ frame: 0, value: new Vector3(0, 0, 0) })
+		translation1Keys.push({ frame: 40, value: distTranslation1 })
+
+		const rotationKeys: Array<{ frame: number; value: GLfloat }> = []
+		rotationKeys.push({ frame: 40, value: degToRad(90) })
+		rotationKeys.push({ frame: 60, value: degToRad(45) })
+
+		const translation2Keys: Array<{ frame: number; value: Vector3 }> = []
+		translation2Keys.push({ frame: 60, value: distTranslation1 })
+		translation2Keys.push({ frame: 100, value: distTranslation2 })
+
+		const characterTranslation = new Animation(
+			'walkTranslation',
+			'position',
+			30,
+			Animation.ANIMATIONTYPE_VECTOR3,
+			Animation.ANIMATIONLOOPMODE_CYCLE
+		)
+		characterTranslation.setKeys(translation1Keys)
+
+		const characterRotation = new Animation(
+			'walkRotation',
+			'rotation.y',
+			30,
+			Animation.ANIMATIONTYPE_FLOAT,
+			Animation.ANIMATIONLOOPMODE_CYCLE
+		)
+		characterRotation.setKeys(rotationKeys)
+
+		const characterTranslation2 = new Animation(
+			'walkTranslation',
+			'position',
+			30,
+			Animation.ANIMATIONTYPE_VECTOR3,
+			Animation.ANIMATIONLOOPMODE_CYCLE
+		)
+		characterTranslation2.setKeys(translation2Keys)
+
+		avatar.animations.push(characterTranslation)
+		avatar.animations.push(characterRotation)
+		avatar.animations.push(characterTranslation2)
+
+		avatar.actionManager = new ActionManager(scene)
+		avatar.actionManager.registerAction(
+			new ExecuteCodeAction(ActionManager.OnPickTrigger, function () {
+				// TypeError ??
+
+				try {
+					animation.start()
+					scene.beginAnimation(avatar, 0, 100, false, undefined, () => {
+						console.log('FIN DE TRANSLATION')
+						animation.stop()
+					})
+				} catch (e) {
+					// do nothing
+				}
+			})
+		)
+	}
+
 	return {
 		mediationRoom,
 		chairAroundTable,
+		character,
 	}
 }
