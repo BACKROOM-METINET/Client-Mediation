@@ -48,3 +48,5 @@ export interface HandPosition {
 	origin: Coordinate
 	points: Coordinate[]
 }
+
+export type Expression = 'Angry' | 'Happy' | 'Neutral' | 'Sad' | 'Surprise'

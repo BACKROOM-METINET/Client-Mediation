@@ -9,7 +9,7 @@ import {
 } from '@babylonjs/core'
 import type * as Comlink from 'comlink'
 import { defineStore } from 'pinia'
-import { ref, computed, toRefs } from 'vue'
+import { ref, computed, toRefs, type Ref } from 'vue'
 import { getMaterial } from '@/client/helpers/materials'
 import { getMesh, loadMesh } from '@/client/helpers/mesh'
 import { loadSkybox } from '@/client/helpers/skybox'
@@ -31,11 +31,11 @@ export const useSceneStore = defineStore('scene', () => {
 	const meshesLoader = loadMesh()
 
 	// States
-	const engine = ref<EngineType | null>(null)
-	const scene = ref<SceneType | null>(null)
-	const avatar = ref<Avatar | null>(null)
+	const engine: Ref<EngineType | null> = ref(null)
+	const scene: Ref<SceneType | null> = ref(null)
+	const avatar: Ref<Avatar | null> = ref(null)
 
-	const membersNumber = ref<number>(6)
+	const membersNumber: Ref<number> = ref(6)
 
 	// Getters
 
@@ -66,7 +66,7 @@ export const useSceneStore = defineStore('scene', () => {
 		if (index === -1 || index2 === -1) return
 		scene.value.meshes.splice(index, 1)
 		scene.value.lights.splice(index2, 1)
-		loadSkybox(scene.value as Scene, skybox)
+		loadSkybox(scene.value, skybox)
 	}
 
 	async function render(
@@ -80,16 +80,16 @@ export const useSceneStore = defineStore('scene', () => {
 			scene.value = new Scene(engine.value as EngineType)
 
 			const axes = new AxesViewer(scene.value as Scene, 20)
-			
-			loadSkybox(scene.value as Scene, config.skybox)
  
+			loadSkybox(scene.value, config.skybox)
+
 			const cameraData = await remote.camera
 			// Camera
 			cameraStore.setCamera(
 				new FreeCamera(
 					'camera1',
 					coordinateToVector3(cameraData.position),
-					scene.value as Scene
+					scene.value
 				)
 			)
 			if (!cameraRef.value) return
@@ -154,22 +154,8 @@ export const useSceneStore = defineStore('scene', () => {
 		remote.camera.then((_camera) =>
 			cameraStore.setCameraRotation(_camera.rotation.x, _camera.rotation.y)
 		)
-		remote.handLeft.then((hand) => avatarRef.value?.hands.left.update(hand))
-		remote.handRight.then((hand) => avatarRef.value?.hands.right.update(hand))
-		// if (cameraRef.value) {
-		// 	if (results.leftHandLandmarks) {
-		// 		avatarRef.value?.hands.left.updateEvent(
-		// 			cameraRef.value as Camera,
-		// 			results.leftHandLandmarks
-		// 		)
-		// 	}
-		// 	if (results.rightHandLandmarks) {
-		// 		avatarRef.value?.hands.right.updateEvent(
-		// 			cameraRef.value as Camera,
-		// 			results.rightHandLandmarks
-		// 		)
-		// 	}
-		// }
+		// remote.handLeft.then((hand) => avatarRef.value?.hands.left.update(hand))
+		// remote.handRight.then((hand) => avatarRef.value?.hands.right.update(hand))
 	}
 
 	return {
