@@ -69,7 +69,6 @@ export const useMediationStore = defineStore('mediation', () => {
 		context?.drawImage(image, 0, 0)
 		canvas.toBlob(
 			(blob) => {
-				console.log(blob === null)
 				if (blob) webSocketExpression?.send(blob)
 			},
 			'image/png',
@@ -99,7 +98,7 @@ export const useMediationStore = defineStore('mediation', () => {
 				img.src = imageURL
 				img.onload = () => calcExpression(img)
 			}
-			setInterval(captureImage, 5000)
+			setInterval(captureImage, 1000)
 		}
 
 		webSocketExpression.onmessage = (event) => {
