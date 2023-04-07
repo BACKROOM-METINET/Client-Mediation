@@ -1,5 +1,6 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
+import type { Expression } from '@/client/types/business'
 import CameraIcon from '@/components/icons/CameraIcon.vue'
 import CameraOffIcon from '@/components/icons/CameraOffIcon.vue'
 import EyeIcon from '@/components/icons/EyeIcon.vue'
@@ -13,6 +14,7 @@ const scene = useSceneStore()
 const { fpsCounter } = toRefs(scene)
 
 const props = defineProps<{
+	expression: Expression
 	isCameraPreviewActive: boolean
 	isHolisticActivated: boolean
 	isHolisticLoading: boolean
@@ -49,26 +51,33 @@ function disableHolistic() {
 
 <template>
 	<div class="mediation-ui">
-		<div
-			class="position-absolute over-cam cam"
-			:class="{ hide: !isCameraPreviewActive }">
-			<slot></slot>
-			<button
-				id="btn-close-cam"
-				class="over-item"
-				type="button"
-				@click="closeCameraPreview()">
-				<CameraOffIcon></CameraOffIcon>
-			</button>
+		<div class="ui-bottom-left position-absolute over-cam">
+			<div class="cam" :class="{ hide: !isCameraPreviewActive }">
+				<slot></slot>
+			</div>
+			<div class="aside-cam">
+				<img
+					width="35"
+					:src="`src/assets/img/emoji_${expression.toLocaleLowerCase()}.svg`"
+					alt="your expression" />
+				<button
+					id="btn-close-cam"
+					class="over-item"
+					type="button"
+					:class="{ hide: !isCameraPreviewActive }"
+					@click="closeCameraPreview()">
+					<CameraOffIcon></CameraOffIcon>
+				</button>
+				<button
+					id="btn-open-cam"
+					type="button"
+					class="over-item"
+					:class="{ hide: isCameraPreviewActive }"
+					@click="openCameraPreview()">
+					<CameraIcon></CameraIcon>
+				</button>
+			</div>
 		</div>
-		<button
-			id="btn-open-cam"
-			type="button"
-			class="position-absolute over-cam over-item"
-			:class="{ hide: isCameraPreviewActive }"
-			@click="openCameraPreview()">
-			<CameraIcon></CameraIcon>
-		</button>
 		<div class="position-absolute option-list">
 			<ul>
 				<li v-if="isHolisticLoading">

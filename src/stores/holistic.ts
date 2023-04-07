@@ -23,6 +23,7 @@ export const useHolisticStore = defineStore('holistic', () => {
 
 	// States
 
+	let camera: Camera | null = null
 	const videoElement: Ref<HTMLVideoElement | null> = ref(null)
 
 	let holistic: Holistic | null = null
@@ -118,6 +119,28 @@ export const useHolisticStore = defineStore('holistic', () => {
 	 */
 	const stateRef = computed(() => holisticState.value)
 
+	function startCamera(_videoElement: HTMLVideoElement) {
+		let status = true
+		if (camera) {
+			camera.stop()
+			camera = null
+		}
+		camera = new Camera(_videoElement, {
+			onFrame: async () => {
+				// Half input fps. This version of Holistic is heavy on CPU time.
+				// Wait until they fix web worker (https://github.com/google/mediapipe/issues/2506).
+				if (status)
+					await holistic?.send({
+						image: _videoElement,
+					})
+				status = !status
+			},
+			width: RENDER_WIDTH,
+			height: RENDER_HEIGHT,
+		})
+		camera.start()
+	}
+
 	// Actions
 
 	function start(
@@ -136,6 +159,10 @@ export const useHolisticStore = defineStore('holistic', () => {
 			holisticState.value = 1
 			onResults(results)
 		})
+		if (camera) {
+			camera.stop()
+			camera = null
+		}
 		let status = true
 		const cam = new Camera(_videoElement, {
 			onFrame: async () => {
@@ -161,5 +188,5 @@ export const useHolisticStore = defineStore('holistic', () => {
 		holistic = null
 		holisticState.value = 0
 	}
-	return { stateRef, start, reset, close }
+	return { stateRef, startCamera, start, reset, close }
 })
