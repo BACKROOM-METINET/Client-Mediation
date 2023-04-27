@@ -133,10 +133,17 @@ export const useSceneStore = defineStore('scene', () => {
 				})
 			}
 
-			setTimeout(async() => {
+			setTimeout(async () => {
+				const userCounter = 3
+				for (let i = 0; i < userCounter; i++) {
+					meshesLoader.dummyAvatarAroundTable(scene.value as Scene, {
+						order: i,
+						membersNumber: userCounter,
+						tableRayon: tableRayon,
+					})
+				}
 				await meshesLoader.character(scene.value as Scene)
-			}, 10000 );
-
+			}, 10000)
 
 			return sceneRef.value
 		}

@@ -8,7 +8,6 @@ import {
 	Animation,
 	ActionManager,
 	ExecuteCodeAction,
-	TransformNode,
 	Axis,
 	Space,
 	AnimationGroup,
@@ -16,7 +15,10 @@ import {
 import type { ChairConfig, Scene } from '@/client/types/business'
 import { MeshRoomEnum, type MeshRoomList } from '@/client/types/meshes'
 import { degToRad } from '@/client/utils/converter'
+import { DUMMY_KEY } from '@/constants'
 import { getMaterial } from './materials'
+
+const DISTANCE_HELPERS = 1
 
 // Helpers
 const materials = getMaterial()
@@ -111,6 +113,67 @@ export function getMesh() {
 }
 
 export function loadMesh() {
+	const dummyAvatar = (scene: Scene) => {
+		SceneLoader.ImportMesh(
+			'',
+			MESHES_REPOSITORY,
+			'dummy3.babylon',
+			scene,
+			(meshes) => {
+				// console.log(meshes)
+				meshes.forEach((mesh) => {
+					if (mesh.name === 'YBot') return
+					mesh.scaling.scaleInPlace(3.6)
+				})
+			}
+		)
+	}
+
+	const dummyAvatarAroundTable = (scene: Scene, config: ChairConfig) => {
+		SceneLoader.ImportMesh(
+			'',
+			MESHES_REPOSITORY,
+			'dummy3.babylon',
+			scene,
+			(meshes, _ps, skeletons) => {
+				meshes.forEach((mesh) => {
+					if (mesh.name === 'YBot') return
+					mesh.scaling.scaleInPlace(3.6)
+					mesh.position = new Vector3(
+						(config.tableRayon + DISTANCE_HELPERS) *
+							Math.cos(degToRad((360 / config.membersNumber) * config.order)),
+						-1.4,
+						(config.tableRayon + DISTANCE_HELPERS) *
+							Math.sin(degToRad((360 / config.membersNumber) * config.order))
+					)
+					mesh.rotation = new Vector3(
+						0,
+						degToRad((-360 / config.membersNumber) * config.order - 90),
+						0
+					)
+				})
+				skeletons.forEach((skeleton) => {
+					if (skeleton.name === DUMMY_KEY.MESHES.SKIN) {
+						skeleton.bones.forEach((bone) => {
+							if (
+								bone.name === DUMMY_KEY.BONES.RIGHT_UP_LEG ||
+								bone.name === DUMMY_KEY.BONES.LEFT_UP_LEG
+							)
+								bone.rotate(Axis.X, degToRad(-90))
+							if (
+								bone.name === DUMMY_KEY.BONES.RIGHT_LEG ||
+								bone.name === DUMMY_KEY.BONES.LEFT_LEG
+							)
+								bone.rotate(Axis.X, degToRad(90))
+							if (bone.name === DUMMY_KEY.BONES.NECK)
+								bone.rotate(Axis.X, degToRad(160))
+						})
+					}
+				})
+			}
+		)
+	}
+
 	const mediationRoom = (
 		scene: Scene,
 		meshRoom: MeshRoomEnum = MeshRoomEnum.PROTOTYPE_01
@@ -137,7 +200,7 @@ export function loadMesh() {
 						door.handle = meshe as Mesh
 				})
 
-				let doorRotation = new Animation(
+				const doorRotation = new Animation(
 					'doorRotation',
 					'rotation.y',
 					30,
@@ -183,10 +246,10 @@ export function loadMesh() {
 				meshes.forEach((meshe) => {
 					meshe.scaling.scaleInPlace(3.6)
 					meshe.position = new Vector3(
-						config.tableRayon *
+						(config.tableRayon + DISTANCE_HELPERS) *
 							Math.cos(degToRad((360 / config.membersNumber) * config.order)),
 						0,
-						config.tableRayon *
+						(config.tableRayon + DISTANCE_HELPERS) *
 							Math.sin(degToRad((360 / config.membersNumber) * config.order))
 					)
 					meshe.rotation = new Vector3(
@@ -341,6 +404,8 @@ export function loadMesh() {
 	}
 
 	return {
+		dummyAvatar,
+		dummyAvatarAroundTable,
 		mediationRoom,
 		chairAroundTable,
 		character,

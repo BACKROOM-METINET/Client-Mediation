@@ -16,8 +16,14 @@ export class Pose {
 	public camera: CameraData
 	public handLeft: HandPosition
 	public handRight: HandPosition
+
+	/**
+	 * Reduce Camera Shaking
+	 */
+
 	private historyCamX: number[] = []
 	private historyCamY: number[] = []
+
 	constructor() {
 		this.camera = {
 			position: { x: 0, y: 5, z: -10 },
