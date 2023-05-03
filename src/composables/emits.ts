@@ -28,6 +28,7 @@ export function useHighLevelClientEmits() {
 			)
 
 			const { room } = response
+			roomStore.setCurrentRoomId(room.id)
 			roomStore.upsertRoom(room)
 
 			return response

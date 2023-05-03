@@ -22,3 +22,11 @@
 .room-title span {
   font-weight: bold;
 }
+
+.video-buttons {
+  position: absolute;
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  bottom: 20px;
+}

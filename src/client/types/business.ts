@@ -67,7 +67,7 @@ export type Expression = 'Angry' | 'Happy' | 'Neutral' | 'Sad' | 'Surprise'
 export type Room = {
 	id: string
 	name: string
-	participants: []
+	participants: Participant[]
 }
 
 export type Auth = {
