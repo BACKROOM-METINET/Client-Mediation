@@ -1,18 +1,25 @@
 <script setup lang="ts">
 import axios from 'axios'
-import Twilio, { createLocalVideoTrack } from 'twilio-video'
-import { ref } from 'vue'
+import Twilio, { createLocalVideoTrack, Room } from 'twilio-video'
+import { Ref, ref, toRefs } from 'vue'
 import { emitter } from '@/client/events/event'
+import { useHighLevelClientEmits } from '@/composables/emits'
+import { useAuthStore } from '@/stores/auth'
+import { useRoomStore } from '@/stores/room'
+
+const clientEmits = useHighLevelClientEmits()
+
+const roomStore = useRoomStore()
+const authSore = useAuthStore()
+
+const { currentRoom } = toRefs(roomStore)
+const { user } = toRefs(authSore)
 
 const props = defineProps(['username'])
 
 const loading = ref(false)
-const data = ref({})
 const localTrack = ref(false)
-const remoteTrack = ref('')
-const activeRoom = ref('')
-const previewTracks = ref('')
-const identity = ref('')
+const activeRoom: Ref<Room | null> = ref(null)
 const roomName = ref(null)
 
 created()
@@ -61,7 +68,15 @@ function detachParticipantTracks(participant: any) {
 // Leave Room.
 function leaveRoomIfJoined() {
 	if (activeRoom.value) {
-		activeRoom.value = ''
+		activeRoom.value.disconnect()
+	}
+}
+
+function leaveRoom() {
+	if (currentRoom.value) {
+		clientEmits.leaveRoom(user.value, currentRoom.value.id)
+		loading.value = false
+		roomName.value = null
 	}
 }
 
@@ -79,14 +94,14 @@ function createChat(room_name: any) {
 		}
 		// before a user enters a new room,
 		// disconnect the user from they joined already
-		leaveRoomIfJoined()
+		// leaveRoomIfJoined()
 
 		// remove any remote track when joining a new room
 		const remoteTrack = document.getElementById('remoteTrack')
 		if (!remoteTrack) return
 		remoteTrack.innerHTML = ''
 
-		Twilio.connect(token, connectOptions).then(function (room: any) {
+		Twilio.connect(token, connectOptions).then(function (room: Room) {
 			// console.log('Successfully joined a Room: ', room);
 			dispatchLog('Successfully joined a Room: ' + room_name)
 
@@ -97,6 +112,9 @@ function createChat(room_name: any) {
 
 			// Attach the Tracks of all the remote Participants.
 			room.participants.forEach(function (participant: any) {
+				if (participant.identity !== props.username) {
+					dispatchLog(participant.identity + ' is already here !')
+				}
 				const previewContainer = document.getElementById('localTrack')
 				attachParticipantTracks(participant, previewContainer)
 			})
@@ -171,6 +189,12 @@ function created() {
 			<div id="remoteTrack"></div>
 		</div>
 		<div id="localTrack"></div>
+		<button
+			v-if="currentRoom"
+			class="button-hide-logs btn btn-primary"
+			@click="leaveRoom">
+			leave Room
+		</button>
 	</div>
 </template>
 

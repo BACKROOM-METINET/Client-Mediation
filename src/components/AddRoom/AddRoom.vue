@@ -1,17 +1,19 @@
 <script setup lang="ts">
 import { ref } from 'vue'
-import { emitter } from '@/client/events/event'
+import { useHighLevelClientEmits } from '@/composables/emits'
+
+const clientEmits = useHighLevelClientEmits()
 
 const roomName = ref('')
 
-function createNewRoom(name: string) {
-	if (!name) {
+async function createNewRoom() {
+	if (!roomName.value) {
 		alert('please provide a room name')
 		return
 	}
 
+	await clientEmits.createRoom(roomName.value)
 	roomName.value = ''
-	emitter.emit('new_room', name)
 }
 </script>
 
@@ -19,7 +21,7 @@ function createNewRoom(name: string) {
 	<div class="roomForm">
 		<form
 			class="form-inline room-form"
-			@submit.prevent="createNewRoom(roomName)">
+			@submit.prevent="createNewRoom()">
 			<div class="form-floating mb-2">
 				<input
 					type="text"

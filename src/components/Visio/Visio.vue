@@ -1,33 +1,41 @@
 <script setup lang="ts">
 // import components
-import { ref } from 'vue'
+import { ref, toRefs } from 'vue'
+import { useAuthStore } from '@/stores/auth'
 import Logs from '../Log/Log.vue'
 import Rooms from '../Rooms/Rooms.vue'
 import VideoVisio from '../Video/Video.vue'
 
+const authStore = useAuthStore()
+
+const { user } = toRefs(authStore)
+
 const username = ''
-const authenticated = ref(false)
 const logsIsHidden = ref(false)
 
-function submitUsername(username: string) {
+async function login(username: string) {
 	if (!username) {
 		return alert('please provide a username')
 	}
 
-	authenticated.value = true
+	await authStore.login(username)
 }
 </script>
 
 <template>
 	<div class="visio-base">
-		<div class="meeting-page" v-if="authenticated">
+		<div class="meeting-page" v-if="user">
 			<Rooms />
 			<VideoVisio :username="username" />
 			<Logs v-if="!logsIsHidden" />
-			<button class="button-hide-logs btn btn-primary" @click="logsIsHidden = !logsIsHidden">Hide logs</button>
+			<button
+				class="button-hide-logs btn btn-primary"
+				@click="logsIsHidden = !logsIsHidden">
+				Hide logs
+			</button>
 		</div>
 		<div class="username-form" v-else>
-			<form class="form-inline" @submit.prevent="submitUsername(username)">
+			<form class="form-inline" @submit.prevent="login(username)">
 				<div class="form-floating mb-2">
 					<input
 						type="text"

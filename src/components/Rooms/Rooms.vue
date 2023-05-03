@@ -1,29 +1,26 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { toRefs } from 'vue'
 import { emitter } from '@/client/events/event'
+import type { Room } from '@/client/types/business'
+import { useHighLevelClientEmits } from '@/composables/emits'
+import { useAuthStore } from '@/stores/auth'
+import { useRoomStore } from '@/stores/room'
 import AddRoom from '../AddRoom/AddRoom.vue'
 
-const rooms = ref([
-	{ id: 1, name: 'Test1' },
-	{ id: 2, name: 'Test2' },
-	{ id: 3, name: 'Test3' },
-	{ id: 4, name: 'Test4' },
-	{ id: 5, name: 'Test5' },
-])
+const clientEmits = useHighLevelClientEmits()
 
-const roomCount = ref(0)
+const roomStore = useRoomStore()
+const authSore = useAuthStore()
 
-created()
+const { rooms, currentRoom } = toRefs(roomStore)
+const { user } = toRefs(authSore)
 
-function created() {
-	emitter.on('new_room', (data: any) => {
-		roomCount.value++
-		rooms.value.push({ id: roomCount.value, name: data })
-	})
-}
-
-function showRoom(room: string) {
-	emitter.emit('show_room', room)
+function joinRoom(room: Room) {
+  if (currentRoom.value) {
+    clientEmits.leaveRoom(user.value.username, currentRoom.value.id)
+  }
+	clientEmits.joinRoom(user.value.username, room.id)
+	emitter.emit('show_room', room.name)
 }
 </script>
 
@@ -34,12 +31,13 @@ function showRoom(room: string) {
 				class="room"
 				v-for="room in rooms"
 				v-bind:key="room.id"
-				@click="showRoom(room.name)">
-				{{ room.name }}
+				@click="joinRoom(room)">
+				<p>{{ room.name }}</p>
+				<br />
+				<p>{{ room.participants.length }}</p>
 			</div>
 		</div>
 		<AddRoom />
-		<!-- Imported AddRoom component -->
 	</div>
 </template>
 

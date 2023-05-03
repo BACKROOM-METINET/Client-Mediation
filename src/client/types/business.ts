@@ -50,3 +50,18 @@ export interface HandPosition {
 }
 
 export type Expression = 'Angry' | 'Happy' | 'Neutral' | 'Sad' | 'Surprise'
+
+export type Room = {
+	id: string
+	name: string
+	participants: []
+}
+
+export type Auth = {
+	username: string
+}
+
+export type Participant = {
+	username: string
+	isMediator: boolean
+}
