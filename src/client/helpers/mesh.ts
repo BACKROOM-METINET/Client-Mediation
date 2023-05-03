@@ -261,16 +261,6 @@ export function loadMesh() {
 						meshe.material = materials.tissue(scene)
 					if (meshe.name === 'metal_frame_Plane.001')
 						meshe.material = materials.metal(scene)
-					/*
-				bottom_frame_Cube
-				NewUI.vue:174 mesh_mm1
-				NewUI.vue:174 leather_Cube.002
-				NewUI.vue:174 leggy_Cylinder.013
-				NewUI.vue:174 mesh_mm1
-				NewUI.vue:174 metal_frame_Plane.001 
-				*/
-
-					//meshe.material = woodTexture;
 				})
 			}
 		)
