@@ -14,7 +14,7 @@ const scene = useSceneStore()
 const { fpsCounter } = toRefs(scene)
 
 const props = defineProps<{
-	expression: Emotion
+	emotion: Emotion
 	isCameraPreviewActive: boolean
 	isHolisticActivated: boolean
 	isHolisticLoading: boolean
@@ -58,8 +58,8 @@ function disableHolistic() {
 			<div class="aside-cam">
 				<img
 					width="35"
-					:src="`src/assets/img/emoji_${expression.toLocaleLowerCase()}.svg`"
-					alt="your expression" />
+					:src="`src/assets/img/emoji_${emotion.toLocaleLowerCase()}.svg`"
+					alt="your emotion" />
 				<button
 					id="btn-close-cam"
 					class="over-item"

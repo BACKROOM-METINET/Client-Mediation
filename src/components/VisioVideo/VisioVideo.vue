@@ -9,6 +9,7 @@ import Twilio, {
 	RemoteVideoTrack,
 } from 'twilio-video'
 import { computed, type Ref, ref, toRefs } from 'vue'
+import { useRouter } from 'vue-router'
 import { emitter } from '@/client/events/event'
 import { useHighLevelClientEmits } from '@/composables/emits'
 import { useAuthStore } from '@/stores/auth'
@@ -18,6 +19,8 @@ const clientEmits = useHighLevelClientEmits()
 
 const roomStore = useRoomStore()
 const authSore = useAuthStore()
+
+const router = useRouter()
 
 const { currentRoom, currentParticipant } = toRefs(roomStore)
 const { user } = toRefs(authSore)
@@ -99,7 +102,11 @@ function leaveRoom() {
 	}
 }
 
-function startMeeting() {}
+function startMeeting() {
+	router.push({
+		name: 'mediation',
+	})
+}
 
 function createChat(room_name: any) {
 	loading.value = true

@@ -12,7 +12,7 @@ import { ref, computed, toRefs, type Ref } from 'vue'
 import { getMaterial } from '@/client/helpers/materials'
 import { getMesh, loadMesh } from '@/client/helpers/mesh'
 import { loadSkybox } from '@/client/helpers/skybox'
-import type { Avatar } from '@/client/types/business'
+import type { Avatar, Participant } from '@/client/types/business'
 import type { MediationConfig } from '@/client/types/config'
 import type { SkyboxEnum } from '@/client/types/meshes'
 import { coordinateToVector3 } from '@/client/utils/converter'
@@ -34,7 +34,8 @@ export const useSceneStore = defineStore('scene', () => {
 	const scene: Ref<SceneType | null> = ref(null)
 	const avatar: Ref<Avatar | null> = ref(null)
 
-	const membersNumber: Ref<number> = ref(6)
+	const membersNumber: Ref<number> = ref(0)
+	const participants: Ref<Participant[]> = ref([])
 
 	// Getters
 
@@ -134,12 +135,12 @@ export const useSceneStore = defineStore('scene', () => {
 			}
 
 			setTimeout(async () => {
-				const userCounter = 3
-				for (let i = 0; i < userCounter; i++) {
+				for (let i = 0; i < membersNumber.value; i++) {
 					meshesLoader.dummyAvatarAroundTable(scene.value as Scene, {
 						order: i,
-						membersNumber: userCounter,
+						membersNumber: membersNumber.value,
 						tableRayon: tableRayon,
+						isMe: participants.value[i].isMe ?? false,
 					})
 				}
 				await meshesLoader.character(scene.value as Scene)
@@ -164,6 +165,12 @@ export const useSceneStore = defineStore('scene', () => {
 		// remote.handRight.then((hand) => avatarRef.value?.hands.right.update(hand))
 	}
 
+	function setRoomRef(_participants: Participant[]) {
+		console.log(_participants)
+		membersNumber.value = _participants.length
+		participants.value = _participants
+	}
+
 	return {
 		sceneRef,
 		cameraRef,
@@ -173,5 +180,6 @@ export const useSceneStore = defineStore('scene', () => {
 		setSkybox,
 		render,
 		onHolisticResult,
+		setRoomRef,
 	}
 })

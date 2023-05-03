@@ -41,6 +41,10 @@ export interface ChairConfig {
 	order: number
 }
 
+export interface AvatarConfig extends ChairConfig {
+	isMe: boolean
+}
+
 export interface CameraData {
 	position: Coordinate
 	rotation: Coordinate
@@ -74,6 +78,8 @@ export interface ParticipantEvent {
 	role: Role
 	emotion: Emotion
 }
+
+export interface ParticipantServer extends Omit<ParticipantEvent, 'emotion'> {}
 
 export interface Participant extends ParticipantEvent {
 	isMe: boolean

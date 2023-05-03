@@ -3,11 +3,10 @@ import { ref, computed, type Ref, type ComputedRef, toRefs } from 'vue'
 import type {
 	AvatarEventInput,
 	Participant,
-	ParticipantEvent,
+	ParticipantServer,
 	Room,
 	User,
 } from '@/client/types/business'
-import { recordToLength } from '@/client/utils/converter'
 import { useAuthStore } from './auth'
 
 export const useRoomStore = defineStore('room', () => {
@@ -74,9 +73,13 @@ export const useRoomStore = defineStore('room', () => {
 	function upsertRoom(room: Room) {
 		const index = roomsRef.value.findIndex((_room) => _room.id === room.id)
 
+		room.participants.forEach((_participant) => {
+			_participant.isMe = _participant.name === user.value?.name
+		})
+
 		if (index !== -1) {
 			roomsRef.value[index] = { ...room }
-			if (recordToLength(roomsRef.value[index].participants) === 0)
+			if (roomsRef.value[index].participants.length === 0)
 				removeRoom(roomsRef.value[index].id)
 		} else {
 			roomsRef.value.push({ ...room })
@@ -94,18 +97,26 @@ export const useRoomStore = defineStore('room', () => {
 		}
 	}
 
-	function addParticipant(roomId: number, participant: ParticipantEvent) {
+	function addParticipant(roomId: number, participant: ParticipantServer) {
 		const index = roomsRef.value.findIndex((_room) => _room.id === roomId)
 
 		if (index !== -1) {
 			const participantIndex = roomsRef.value[index].participants.findIndex(
 				(_p) => _p.name === participant.name
 			)
-			if (participantIndex !== -1)
+			if (participantIndex !== -1) {
 				roomsRef.value[index].participants[participantIndex] = {
 					...participant,
+					emotion: 'Neutral',
 					isMe: participant.name === user.value?.name,
 				}
+			} else {
+				roomsRef.value[index].participants.push({
+					...participant,
+					emotion: 'Neutral',
+					isMe: participant.name === user.value?.name,
+				})
+			}
 		}
 	}
 

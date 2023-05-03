@@ -22,7 +22,7 @@ const {
 	isCameraPreviewRef,
 } = toRefs(settingStore)
 const mediationStore = useMediationStore()
-const { isHolisticLoading, expressionRef } = toRefs(mediationStore)
+const { isHolisticLoading, emotionRef } = toRefs(mediationStore)
 const isConfigMenuOpen = ref(false)
 
 function openConfigMenu() {
@@ -62,7 +62,7 @@ onMounted(async () => {
 <template>
 	<div class="mediation position-relative">
 		<MediationUI
-			:expression="expressionRef"
+			:emotion="emotionRef"
 			:is-config-menu-open="isConfigMenuOpen"
 			:is-camera-preview-active="isCameraPreviewRef"
 			:is-holistic-activated="isHolisticActivatedRef"
@@ -70,9 +70,7 @@ onMounted(async () => {
 			@open-config="openConfigMenu()"
 			@enable-holistic="startHolistic()"
 			@disable-holistic="stopHolistic()">
-			<video
-				id="input_video"
-				:class="expressionRef.toLocaleLowerCase()"></video>
+			<video id="input_video" :class="emotionRef.toLocaleLowerCase()"></video>
 		</MediationUI>
 		<MediationOptions
 			:is-open="isConfigMenuOpen"

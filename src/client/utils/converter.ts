@@ -8,11 +8,3 @@ export function degToRad(deg: number): number {
 export function coordinateToVector3(coord: Coordinate): Vector3 {
 	return new Vector3(coord.x, coord.y, coord.z)
 }
-
-export function recordToLength(record: Record<any, any>) {
-	let len = 0
-	for (const _key in record) {
-		len++
-	}
-	return len
-}
