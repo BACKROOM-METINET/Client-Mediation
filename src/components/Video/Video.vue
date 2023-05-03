@@ -33,7 +33,7 @@ created()
 
 async function getAccessToken() {
 	return await axios.get(
-		`http://192.168.69.67:3000/token?identity=${props.username}`
+		`http://localhost:3000/token?identity=${props.username}`
 	)
 }
 

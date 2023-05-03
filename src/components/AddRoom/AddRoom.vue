@@ -1,10 +1,19 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, toRefs } from 'vue'
+import { emitter } from '@/client/events/event'
 import { useHighLevelClientEmits } from '@/composables/emits'
+import { useAuthStore } from '@/stores/auth'
+import { useRoomStore } from '@/stores/room'
 
 const clientEmits = useHighLevelClientEmits()
 
 const roomName = ref('')
+
+const roomStore = useRoomStore()
+const authSore = useAuthStore()
+
+const { currentRoom } = toRefs(roomStore)
+const { user } = toRefs(authSore)
 
 async function createNewRoom() {
 	if (!roomName.value) {
@@ -12,16 +21,18 @@ async function createNewRoom() {
 		return
 	}
 
-	await clientEmits.createRoom(roomName.value)
+	if (currentRoom.value) {
+		await clientEmits.leaveRoom(user.value.username, currentRoom.value.id)
+	}
+	await clientEmits.createAndJoinRoom(user.value.username, roomName.value)
+	emitter.emit('show_room', roomName.value)
 	roomName.value = ''
 }
 </script>
 
 <template>
 	<div class="roomForm">
-		<form
-			class="form-inline room-form"
-			@submit.prevent="createNewRoom()">
+		<form class="form-inline room-form" @submit.prevent="createNewRoom()">
 			<div class="form-floating mb-2">
 				<input
 					type="text"
