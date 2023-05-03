@@ -24,8 +24,8 @@ export interface GetRoomsEmit extends Emit {
 	}
 }
 
-export interface createAndJoinRoomEmit extends Emit {
-	event: '@createAndJoinRoom'
+export interface createRoomEmit extends Emit {
+	event: '@createRoom'
 	payload: {
 		username: string
 		roomName: string

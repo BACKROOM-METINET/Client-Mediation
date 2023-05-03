@@ -9,7 +9,8 @@ export const useAuthStore = defineStore('auth', () => {
 
 	async function login(username = 'defaultUsername') {
 		try {
-			user.value = await connect(username)
+			const obj = await connect(username)
+			user.value = obj.user
 		} catch (e) {
 			user.value = null
 			throw e
