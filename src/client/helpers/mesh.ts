@@ -28,34 +28,34 @@ const MESHES_REPOSITORY = '../../assets/meshes/'
 const MESH_ROOM: MeshRoomList = {
 	PROTOTYPE_01: {
 		name: 'meeting-room-v2.obj',
-		funct: (meshes: AbstractMesh[], scene: Scene) => {
-			meshes.forEach((meshe) => {
-				meshe.position = new Vector3(-100, -1, 100)
-				meshe.scaling.scaleInPlace(10)
-				if (meshe.name === 'Floor') meshe.material = materials.woodDark(scene)
+		onCreate: (meshes: AbstractMesh[], scene: Scene) => {
+			meshes.forEach((mesh) => {
+				mesh.position = new Vector3(-100, -1, 100)
+				mesh.scaling.scaleInPlace(10)
+				if (mesh.name === 'Floor') mesh.material = materials.woodDark(scene)
 			})
 		},
 	},
 	PROTOTYPE_02: {
 		name: 'prototype-2-texture&door.gltf',
-		funct: (meshes: AbstractMesh[]) => {
-			meshes.forEach((meshe) => {
-				if (meshe.name !== '__root__') return
-				meshe.position.x += 18
-				meshe.position.y += -0.7
-				meshe.position.z += 17
-				meshe.scaling.scaleInPlace(1.15)
+		onCreate: (meshes: AbstractMesh[]) => {
+			meshes.forEach((mesh) => {
+				if (mesh.name !== '__root__') return
+				mesh.position.x += 18
+				mesh.position.y += -0.7
+				mesh.position.z += 17
+				mesh.scaling.scaleInPlace(1.15)
 			})
 		},
 	},
 	PROTOTYPE_02_NOTEXTURE: {
 		name: 'prototype-2-notexture&door.gltf',
-		funct: (meshes: AbstractMesh[]) => {
-			meshes.forEach((meshe) => {
-				if (meshe.name !== '__root__') return
-				meshe.position.x += 15
-				meshe.position.y += -0.5
-				meshe.position.z += 15
+		onCreate: (meshes: AbstractMesh[]) => {
+			meshes.forEach((mesh) => {
+				if (mesh.name !== '__root__') return
+				mesh.position.x += 15
+				mesh.position.y += -0.5
+				mesh.position.z += 15
 			})
 		},
 	},
@@ -188,7 +188,7 @@ export function loadMesh() {
 			MESH_ROOM[meshRoom].name,
 			scene,
 			(meshes) => {
-				MESH_ROOM[meshRoom].funct(meshes, scene)
+				MESH_ROOM[meshRoom].onCreate(meshes, scene)
 
 				const door: { interior?: Mesh; glass?: Mesh; handle?: Mesh } = {}
 				meshes.forEach((meshe) => {
