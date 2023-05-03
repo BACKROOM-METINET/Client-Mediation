@@ -1,18 +1,32 @@
 <script setup lang="ts">
 import axios from 'axios'
-import Twilio, { createLocalVideoTrack } from 'twilio-video'
-import { ref } from 'vue'
+import Twilio, {
+	createLocalVideoTrack,
+	Room,
+	RemoteParticipant,
+	RemoteTrackPublication,
+	type RemoteTrack,
+	RemoteVideoTrack,
+} from 'twilio-video'
+import { type Ref, ref, toRefs } from 'vue'
 import { emitter } from '@/client/events/event'
+import { useHighLevelClientEmits } from '@/composables/emits'
+import { useAuthStore } from '@/stores/auth'
+import { useRoomStore } from '@/stores/room'
+
+const clientEmits = useHighLevelClientEmits()
+
+const roomStore = useRoomStore()
+const authSore = useAuthStore()
+
+const { currentRoom } = toRefs(roomStore)
+const { user } = toRefs(authSore)
 
 const props = defineProps(['username'])
 
 const loading = ref(false)
-const data = ref({})
 const localTrack = ref(false)
-const remoteTrack = ref('')
-const activeRoom = ref('')
-const previewTracks = ref('')
-const identity = ref('')
+const activeRoom: Ref<Room | null> = ref(null)
 const roomName = ref(null)
 
 created()
@@ -29,31 +43,41 @@ function dispatchLog(message: string) {
 }
 
 // Attach the Tracks to the DOM.
-function attachTracks(tracks: any, container: any) {
-	tracks.forEach(function (track: any) {
-		if (track.kind === 'video') {
-			container.appendChild(track.track.attach())
+function attachTracks(
+	tracks: RemoteTrackPublication[],
+	container: HTMLElement
+) {
+	tracks.forEach((t: RemoteTrackPublication) => {
+		if (t.kind === 'video' && t.track) {
+			container.appendChild((t.track as RemoteVideoTrack).attach())
 		}
 	})
 }
 
 // Attach the Participant's Tracks to the DOM.
-function attachParticipantTracks(participant: any, container: any) {
+function attachParticipantTracks(
+	participant: RemoteParticipant,
+	container: HTMLElement
+) {
 	const tracks = Array.from(participant.tracks.values())
 	attachTracks(tracks, container)
 }
 
 // Detach the Tracks from the DOM.
-function detachTracks(tracks: any) {
-	tracks.forEach((track: any) => {
-		track.detach().forEach((detachedElement: any) => {
-			detachedElement.remove()
-		})
+function detachTracks(tracks: RemoteTrackPublication[]) {
+	tracks.forEach((t: RemoteTrackPublication) => {
+		if (t.kind === 'video' && t.track) {
+			;(t.track as RemoteVideoTrack)
+				.detach()
+				.forEach((detachedElement: HTMLMediaElement) => {
+					detachedElement.remove()
+				})
+		}
 	})
 }
 
 // Detach the Participant's Tracks from the DOM.
-function detachParticipantTracks(participant: any) {
+function detachParticipantTracks(participant: RemoteParticipant) {
 	const tracks = Array.from(participant.tracks.values())
 	detachTracks(tracks)
 }
@@ -61,7 +85,15 @@ function detachParticipantTracks(participant: any) {
 // Leave Room.
 function leaveRoomIfJoined() {
 	if (activeRoom.value) {
-		activeRoom.value = ''
+		activeRoom.value.disconnect()
+	}
+}
+
+function leaveRoom() {
+	if (currentRoom.value) {
+		clientEmits.leaveRoom(user.value, currentRoom.value.id)
+		loading.value = false
+		roomName.value = null
 	}
 }
 
@@ -79,14 +111,14 @@ function createChat(room_name: any) {
 		}
 		// before a user enters a new room,
 		// disconnect the user from they joined already
-		leaveRoomIfJoined()
+		// leaveRoomIfJoined()
 
 		// remove any remote track when joining a new room
 		const remoteTrack = document.getElementById('remoteTrack')
 		if (!remoteTrack) return
 		remoteTrack.innerHTML = ''
 
-		Twilio.connect(token, connectOptions).then(function (room: any) {
+		Twilio.connect(token, connectOptions).then(function (room: Room) {
 			// console.log('Successfully joined a Room: ', room);
 			dispatchLog('Successfully joined a Room: ' + room_name)
 
@@ -97,30 +129,49 @@ function createChat(room_name: any) {
 
 			// Attach the Tracks of all the remote Participants.
 			room.participants.forEach(function (participant: any) {
+				if (participant.identity !== props.username) {
+					dispatchLog(participant.identity + ' is already here !')
+				}
 				const previewContainer = document.getElementById('localTrack')
+				if (!previewContainer) return
 				attachParticipantTracks(participant, previewContainer)
 			})
 
 			// When a Participant joins the Room, log the event.
-			room.on('participantConnected', function (participant: any) {
+			room.on('participantConnected', (participant: RemoteParticipant) => {
 				dispatchLog("Joining: '" + participant.identity + "'")
 			})
 
 			// When a Participant adds a Track, attach it to the DOM.
-			room.on('trackAdded', function (track: any, participant: any) {
-				dispatchLog(participant.identity + ' added track: ' + track.kind)
-				const previewContainer = document.getElementById('remoteTrack')
-				attachTracks([track], previewContainer)
-			})
+			room.on(
+				'trackSubscribed',
+				(
+					track: RemoteTrack,
+					publication: RemoteTrackPublication,
+					participant: RemoteParticipant
+				) => {
+					dispatchLog(participant.identity + ' added track: ' + track.kind)
+					const previewContainer = document.getElementById('remoteTrack')
+					if (!previewContainer) return
+					attachTracks([publication], previewContainer)
+				}
+			)
 
 			// When a Participant removes a Track, detach it from the DOM.
-			room.on('trackRemoved', function (track: any, participant: any) {
-				dispatchLog(participant.identity + ' removed track: ' + track.kind)
-				detachTracks([track])
-			})
+			room.on(
+				'trackUnsubscribed',
+				(
+					track: RemoteTrack,
+					publication: RemoteTrackPublication,
+					participant: RemoteParticipant
+				) => {
+					dispatchLog(participant.identity + ' removed track: ' + track.kind)
+					detachTracks([publication])
+				}
+			)
 
 			// When a Participant leaves the Room, detach its Tracks.
-			room.on('participantDisconnected', function (participant: any) {
+			room.on('participantDisconnected', (participant: RemoteParticipant) => {
 				dispatchLog("Participant '" + participant.identity + "' left the room")
 				detachParticipantTracks(participant)
 			})
@@ -171,6 +222,12 @@ function created() {
 			<div id="remoteTrack"></div>
 		</div>
 		<div id="localTrack"></div>
+		<button
+			v-if="currentRoom"
+			class="button-hide-logs btn btn-primary"
+			@click="leaveRoom">
+			leave Room
+		</button>
 	</div>
 </template>
 

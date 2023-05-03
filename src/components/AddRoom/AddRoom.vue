@@ -1,25 +1,38 @@
 <script setup lang="ts">
-import { ref } from 'vue'
+import { ref, toRefs } from 'vue'
 import { emitter } from '@/client/events/event'
+import { useHighLevelClientEmits } from '@/composables/emits'
+import { useAuthStore } from '@/stores/auth'
+import { useRoomStore } from '@/stores/room'
+
+const clientEmits = useHighLevelClientEmits()
 
 const roomName = ref('')
 
-function createNewRoom(name: string) {
-	if (!name) {
+const roomStore = useRoomStore()
+const authSore = useAuthStore()
+
+const { currentRoom } = toRefs(roomStore)
+const { user } = toRefs(authSore)
+
+async function createNewRoom() {
+	if (!roomName.value) {
 		alert('please provide a room name')
 		return
 	}
 
+	if (currentRoom.value) {
+		await clientEmits.leaveRoom(user.value.username, currentRoom.value.id)
+	}
+	await clientEmits.createAndJoinRoom(user.value.username, roomName.value)
+	emitter.emit('show_room', roomName.value)
 	roomName.value = ''
-	emitter.emit('new_room', name)
 }
 </script>
 
 <template>
 	<div class="roomForm">
-		<form
-			class="form-inline room-form"
-			@submit.prevent="createNewRoom(roomName)">
+		<form class="form-inline room-form" @submit.prevent="createNewRoom()">
 			<div class="form-floating mb-2">
 				<input
 					type="text"
