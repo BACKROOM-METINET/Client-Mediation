@@ -8,7 +8,6 @@ import {
 	Animation,
 	ActionManager,
 	ExecuteCodeAction,
-	TransformNode,
 	Axis,
 	Space,
 	AnimationGroup,
@@ -16,7 +15,10 @@ import {
 import type { ChairConfig, Scene } from '@/client/types/business'
 import { MeshRoomEnum, type MeshRoomList } from '@/client/types/meshes'
 import { degToRad } from '@/client/utils/converter'
+import { DUMMY_KEY } from '@/constants'
 import { getMaterial } from './materials'
+
+const DISTANCE_HELPERS = 1
 
 // Helpers
 const materials = getMaterial()
@@ -26,34 +28,34 @@ const MESHES_REPOSITORY = '../../assets/meshes/'
 const MESH_ROOM: MeshRoomList = {
 	PROTOTYPE_01: {
 		name: 'meeting-room-v2.obj',
-		funct: (meshes: AbstractMesh[], scene: Scene) => {
-			meshes.forEach((meshe) => {
-				meshe.position = new Vector3(-100, -1, 100)
-				meshe.scaling.scaleInPlace(10)
-				if (meshe.name === 'Floor') meshe.material = materials.woodDark(scene)
+		onCreate: (meshes: AbstractMesh[], scene: Scene) => {
+			meshes.forEach((mesh) => {
+				mesh.position = new Vector3(-100, -1, 100)
+				mesh.scaling.scaleInPlace(10)
+				if (mesh.name === 'Floor') mesh.material = materials.woodDark(scene)
 			})
 		},
 	},
 	PROTOTYPE_02: {
 		name: 'prototype-2-texture&door.gltf',
-		funct: (meshes: AbstractMesh[]) => {
-			meshes.forEach((meshe) => {
-				if (meshe.name !== '__root__') return
-				meshe.position.x += 18
-				meshe.position.y += -0.7
-				meshe.position.z += 17
-				meshe.scaling.scaleInPlace(1.15)
+		onCreate: (meshes: AbstractMesh[]) => {
+			meshes.forEach((mesh) => {
+				if (mesh.name !== '__root__') return
+				mesh.position.x += 18
+				mesh.position.y += -0.7
+				mesh.position.z += 17
+				mesh.scaling.scaleInPlace(1.15)
 			})
 		},
 	},
 	PROTOTYPE_02_NOTEXTURE: {
 		name: 'prototype-2-notexture&door.gltf',
-		funct: (meshes: AbstractMesh[]) => {
-			meshes.forEach((meshe) => {
-				if (meshe.name !== '__root__') return
-				meshe.position.x += 15
-				meshe.position.y += -0.5
-				meshe.position.z += 15
+		onCreate: (meshes: AbstractMesh[]) => {
+			meshes.forEach((mesh) => {
+				if (mesh.name !== '__root__') return
+				mesh.position.x += 15
+				mesh.position.y += -0.5
+				mesh.position.z += 15
 			})
 		},
 	},
@@ -111,6 +113,67 @@ export function getMesh() {
 }
 
 export function loadMesh() {
+	const dummyAvatar = (scene: Scene) => {
+		SceneLoader.ImportMesh(
+			'',
+			MESHES_REPOSITORY,
+			'dummy3.babylon',
+			scene,
+			(meshes) => {
+				// console.log(meshes)
+				meshes.forEach((mesh) => {
+					if (mesh.name === 'YBot') return
+					mesh.scaling.scaleInPlace(3.6)
+				})
+			}
+		)
+	}
+
+	const dummyAvatarAroundTable = (scene: Scene, config: ChairConfig) => {
+		SceneLoader.ImportMesh(
+			'',
+			MESHES_REPOSITORY,
+			'dummy3.babylon',
+			scene,
+			(meshes, _ps, skeletons) => {
+				meshes.forEach((mesh) => {
+					if (mesh.name === 'YBot') return
+					mesh.scaling.scaleInPlace(3.6)
+					mesh.position = new Vector3(
+						(config.tableRayon + DISTANCE_HELPERS) *
+							Math.cos(degToRad((360 / config.membersNumber) * config.order)),
+						-1.4,
+						(config.tableRayon + DISTANCE_HELPERS) *
+							Math.sin(degToRad((360 / config.membersNumber) * config.order))
+					)
+					mesh.rotation = new Vector3(
+						0,
+						degToRad((-360 / config.membersNumber) * config.order - 90),
+						0
+					)
+				})
+				skeletons.forEach((skeleton) => {
+					if (skeleton.name === DUMMY_KEY.MESHES.SKIN) {
+						skeleton.bones.forEach((bone) => {
+							if (
+								bone.name === DUMMY_KEY.BONES.RIGHT_UP_LEG ||
+								bone.name === DUMMY_KEY.BONES.LEFT_UP_LEG
+							)
+								bone.rotate(Axis.X, degToRad(-90))
+							if (
+								bone.name === DUMMY_KEY.BONES.RIGHT_LEG ||
+								bone.name === DUMMY_KEY.BONES.LEFT_LEG
+							)
+								bone.rotate(Axis.X, degToRad(90))
+							if (bone.name === DUMMY_KEY.BONES.NECK)
+								bone.rotate(Axis.X, degToRad(160))
+						})
+					}
+				})
+			}
+		)
+	}
+
 	const mediationRoom = (
 		scene: Scene,
 		meshRoom: MeshRoomEnum = MeshRoomEnum.PROTOTYPE_01
@@ -125,7 +188,7 @@ export function loadMesh() {
 			MESH_ROOM[meshRoom].name,
 			scene,
 			(meshes) => {
-				MESH_ROOM[meshRoom].funct(meshes, scene)
+				MESH_ROOM[meshRoom].onCreate(meshes, scene)
 
 				const door: { interior?: Mesh; glass?: Mesh; handle?: Mesh } = {}
 				meshes.forEach((meshe) => {
@@ -137,7 +200,7 @@ export function loadMesh() {
 						door.handle = meshe as Mesh
 				})
 
-				let doorRotation = new Animation(
+				const doorRotation = new Animation(
 					'doorRotation',
 					'rotation.y',
 					30,
@@ -183,10 +246,10 @@ export function loadMesh() {
 				meshes.forEach((meshe) => {
 					meshe.scaling.scaleInPlace(3.6)
 					meshe.position = new Vector3(
-						config.tableRayon *
+						(config.tableRayon + DISTANCE_HELPERS) *
 							Math.cos(degToRad((360 / config.membersNumber) * config.order)),
 						0,
-						config.tableRayon *
+						(config.tableRayon + DISTANCE_HELPERS) *
 							Math.sin(degToRad((360 / config.membersNumber) * config.order))
 					)
 					meshe.rotation = new Vector3(
@@ -198,16 +261,6 @@ export function loadMesh() {
 						meshe.material = materials.tissue(scene)
 					if (meshe.name === 'metal_frame_Plane.001')
 						meshe.material = materials.metal(scene)
-					/*
-				bottom_frame_Cube
-				NewUI.vue:174 mesh_mm1
-				NewUI.vue:174 leather_Cube.002
-				NewUI.vue:174 leggy_Cylinder.013
-				NewUI.vue:174 mesh_mm1
-				NewUI.vue:174 metal_frame_Plane.001 
-				*/
-
-					//meshe.material = woodTexture;
 				})
 			}
 		)
@@ -341,6 +394,8 @@ export function loadMesh() {
 	}
 
 	return {
+		dummyAvatar,
+		dummyAvatarAroundTable,
 		mediationRoom,
 		chairAroundTable,
 		character,

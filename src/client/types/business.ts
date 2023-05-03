@@ -49,4 +49,17 @@ export interface HandPosition {
 	points: Coordinate[]
 }
 
+export interface HeadData {
+	rotation: Coordinate
+}
+
+export interface AvatarData {
+	isMe: boolean
+	head: HeadData
+	hands: {
+		right: HandPosition
+		left: HandPosition
+	}
+}
+
 export type Expression = 'Angry' | 'Happy' | 'Neutral' | 'Sad' | 'Surprise'

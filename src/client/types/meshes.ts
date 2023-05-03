@@ -3,7 +3,7 @@ import type { Scene } from './business'
 
 export interface MeshRoom {
 	name: string
-	funct: (meshes: AbstractMesh[], scene: Scene) => void
+	onCreate: (meshes: AbstractMesh[], scene: Scene) => void
 }
 
 export enum MeshRoomEnum {
@@ -17,7 +17,7 @@ export type MeshRoomList = {
 }
 
 export interface SkyboxChoice {
-	funct: (scene: Scene) => void
+	onCreate: (scene: Scene) => void
 }
 
 export enum SkyboxEnum {

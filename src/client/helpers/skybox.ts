@@ -4,7 +4,7 @@ import { SkyboxEnum, type SkyboxList } from '@/client/types/meshes'
 
 const skybox: SkyboxList = {
 	CLEAR_SKY: {
-		funct: (scene: Scene) => {
+		onCreate: (scene: Scene) => {
 			// Skybox
 			const _dome = new PhotoDome(
 				'skybox',
@@ -27,7 +27,7 @@ const skybox: SkyboxList = {
 		},
 	},
 	CLEAR_SKY_GROUND: {
-		funct: (scene: Scene) => {
+		onCreate: (scene: Scene) => {
 			// Skybox
 			const _dome = new PhotoDome(
 				'skybox',
@@ -50,7 +50,7 @@ const skybox: SkyboxList = {
 		},
 	},
 	MOUNTAIN: {
-		funct: (scene: Scene) => {
+		onCreate: (scene: Scene) => {
 			// Skybox
 			const _dome = new PhotoDome(
 				'skybox',
@@ -79,5 +79,5 @@ export function loadSkybox(
 	scene: Scene,
 	skyboxEnum: SkyboxEnum = SkyboxEnum.CLEAR_SKY
 ) {
-	skybox[skyboxEnum].funct(scene)
+	skybox[skyboxEnum].onCreate(scene)
 }

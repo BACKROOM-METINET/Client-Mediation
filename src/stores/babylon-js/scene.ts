@@ -5,7 +5,6 @@ import {
 	Vector3,
 	type Engine as EngineType,
 	type Scene as SceneType,
-	AxesViewer
 } from '@babylonjs/core'
 import type * as Comlink from 'comlink'
 import { defineStore } from 'pinia'
@@ -79,8 +78,8 @@ export const useSceneStore = defineStore('scene', () => {
 		const createScene = async () => {
 			scene.value = new Scene(engine.value as EngineType)
 
-			const axes = new AxesViewer(scene.value as Scene, 20)
- 
+			// const axes = new AxesViewer(scene.value as Scene, 20)
+
 			loadSkybox(scene.value, config.skybox)
 
 			const cameraData = await remote.camera
@@ -134,10 +133,17 @@ export const useSceneStore = defineStore('scene', () => {
 				})
 			}
 
-			setTimeout(async() => {
+			setTimeout(async () => {
+				const userCounter = 3
+				for (let i = 0; i < userCounter; i++) {
+					meshesLoader.dummyAvatarAroundTable(scene.value as Scene, {
+						order: i,
+						membersNumber: userCounter,
+						tableRayon: tableRayon,
+					})
+				}
 				await meshesLoader.character(scene.value as Scene)
-			}, 10000 );
-
+			}, 10000)
 
 			return sceneRef.value
 		}
