@@ -1,7 +1,8 @@
 import type {
-	createRoomEmit,
+	createAndJoinRoomEmit,
 	GetRoomsEmit,
-	joinRoomEmit, leaveRoomEmit,
+	joinRoomEmit,
+	leaveRoomEmit,
 } from '@/client/types/emits'
 import { useLowLevelClient } from '@/client/useLowLevelClient'
 import { useRoomStore } from '@/stores/room'
@@ -17,13 +18,18 @@ export function useHighLevelClientEmits() {
 			roomStore.setRooms(rooms)
 		},
 
-		async createRoom(roomName: string) {
-			const response = await client.emit<createRoomEmit>('@createRoom', {
-				roomName: roomName,
-			})
+		async createAndJoinRoom(username: string, roomName: string) {
+			const response = await client.emit<createAndJoinRoomEmit>(
+				'@createAndJoinRoom',
+				{
+					username: username,
+					roomName: roomName,
+				}
+			)
 
 			const { room } = response
 			roomStore.upsertRoom(room)
+
 			return response
 		},
 

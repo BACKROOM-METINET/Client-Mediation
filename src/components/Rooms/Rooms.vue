@@ -15,11 +15,11 @@ const authSore = useAuthStore()
 const { rooms, currentRoom } = toRefs(roomStore)
 const { user } = toRefs(authSore)
 
-function joinRoom(room: Room) {
-  if (currentRoom.value) {
-    clientEmits.leaveRoom(user.value.username, currentRoom.value.id)
-  }
-	clientEmits.joinRoom(user.value.username, room.id)
+async function joinRoom(room: Room) {
+	if (currentRoom.value) {
+		await clientEmits.leaveRoom(user.value.username, currentRoom.value.id)
+	}
+	await clientEmits.joinRoom(user.value.username, room.id)
 	emitter.emit('show_room', room.name)
 }
 </script>
