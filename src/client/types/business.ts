@@ -71,10 +71,12 @@ export type Room = {
 }
 
 export type Auth = {
-	username: string
+	name: string
 }
 
+export type Role = 'mediator' | 'lawyer' | 'user'
+
 export type Participant = {
-	username: string
-	isMediator: boolean
+	name: string
+	role: Role
 }

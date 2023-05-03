@@ -33,11 +33,11 @@ const roomName = ref(null)
 const isMediator = computed(() => {
 	if (!currentRoom.value) return
 	const mediatorParticipant = currentRoom.value.participants.find(
-		(participant: Participant) => participant.isMediator
+		(participant: Participant) => participant.role === 'mediator'
 	)
 	if (!mediatorParticipant) return false
 
-	return mediatorParticipant.username === user.value.username
+	return mediatorParticipant.name === user.value.name
 })
 
 created()
