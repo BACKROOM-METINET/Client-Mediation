@@ -17,9 +17,9 @@ const { user } = toRefs(authSore)
 
 async function joinRoom(room: Room) {
 	if (currentRoom.value) {
-		await clientEmits.leaveRoom(user.value.username, currentRoom.value.id)
+		await clientEmits.leaveRoom(user.value.name, currentRoom.value.id)
 	}
-	await clientEmits.joinRoom(user.value.username, room.id)
+	await clientEmits.joinRoom(user.value.name, room.id)
 	emitter.emit('show_room', room.name)
 }
 </script>

@@ -145,7 +145,7 @@ function createChat(room_name: any) {
 				if (participant.identity !== props.username) {
 					dispatchLog(participant.identity + ' is already here !')
 				}
-				const previewContainer = document.getElementById('localTrack')
+				const previewContainer = document.getElementById('remoteTrack')
 				if (!previewContainer) return
 				attachParticipantTracks(participant, previewContainer)
 			})
