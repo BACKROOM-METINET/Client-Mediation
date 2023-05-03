@@ -16,7 +16,7 @@ const router = createRouter({
 				},
 				{
 					path: '/mediation',
-					name: 'new-ui',
+					name: 'mediation',
 					component: () => import('../components/Mediation/Mediation.vue'),
 				},
 			],

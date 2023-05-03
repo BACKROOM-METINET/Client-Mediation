@@ -33,6 +33,8 @@ export type Material = BABYLON.StandardMaterial
 
 export type Complexity = 0 | 1 | 2
 
+export type Emotion = 'Angry' | 'Happy' | 'Neutral' | 'Sad' | 'Surprise'
+
 export interface ChairConfig {
 	tableRayon: number
 	membersNumber: number
@@ -54,7 +56,6 @@ export interface HeadData {
 }
 
 export interface AvatarData {
-	isMe: boolean
 	head: HeadData
 	hands: {
 		right: HandPosition
@@ -62,21 +63,38 @@ export interface AvatarData {
 	}
 }
 
-export type Expression = 'Angry' | 'Happy' | 'Neutral' | 'Sad' | 'Surprise'
-
-export type Room = {
-	id: string
-	name: string
-	participants: Participant[]
-}
-
-export type Auth = {
-	name: string
+export interface AvatarEventInput extends AvatarData {
+	emotion: Emotion
 }
 
 export type Role = 'mediator' | 'lawyer' | 'user'
 
-export type Participant = {
+export interface ParticipantEvent {
 	name: string
 	role: Role
+	emotion: Emotion
+}
+
+export interface Participant extends ParticipantEvent {
+	isMe: boolean
+	avatar?: AvatarData
+}
+
+export interface Room {
+	id: number
+	name: string
+	participants: Participant[]
+}
+
+export interface Auth {
+	name: string
+}
+
+export interface User {
+	name: string
+}
+
+export interface VisioLog {
+	id: number
+	message: string
 }

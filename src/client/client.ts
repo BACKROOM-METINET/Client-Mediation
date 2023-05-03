@@ -2,6 +2,7 @@ import { io, Socket } from 'socket.io-client'
 import type { Auth } from '@/client/types/business'
 import type { AuthenticateEmit, Emit } from '@/client/types/emits'
 import type { Event } from '@/client/types/events'
+import { MEDIATION_BACK_SERVER } from '@/constants'
 
 export default class Client {
 	private title: string
@@ -12,7 +13,7 @@ export default class Client {
 	private endpoint: string
 
 	constructor(
-		endpoint: string = 'ws://localhost:3000',
+		endpoint: string = MEDIATION_BACK_SERVER,
 		title: string = 'user'
 	) {
 		this.title = title

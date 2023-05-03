@@ -10,7 +10,6 @@ import Twilio, {
 } from 'twilio-video'
 import { computed, type Ref, ref, toRefs } from 'vue'
 import { emitter } from '@/client/events/event'
-import type { Participant } from '@/client/types/business'
 import { useHighLevelClientEmits } from '@/composables/emits'
 import { useAuthStore } from '@/stores/auth'
 import { useRoomStore } from '@/stores/room'
@@ -20,7 +19,7 @@ const clientEmits = useHighLevelClientEmits()
 const roomStore = useRoomStore()
 const authSore = useAuthStore()
 
-const { currentRoom } = toRefs(roomStore)
+const { currentRoom, currentParticipant } = toRefs(roomStore)
 const { user } = toRefs(authSore)
 
 const props = defineProps(['username'])
@@ -30,15 +29,7 @@ const localTrack = ref(false)
 const activeRoom: Ref<Room | null> = ref(null)
 const roomName = ref(null)
 
-const isMediator = computed(() => {
-	if (!currentRoom.value) return
-	const mediatorParticipant = currentRoom.value.participants.find(
-		(participant: Participant) => participant.role === 'mediator'
-	)
-	if (!mediatorParticipant) return false
-
-	return mediatorParticipant.name === user.value.name
-})
+const isMediator = computed(() => currentParticipant.value?.role === 'mediator')
 
 created()
 
@@ -101,8 +92,8 @@ function leaveRoomIfJoined() {
 }
 
 function leaveRoom() {
-	if (currentRoom.value) {
-		clientEmits.leaveRoom(user.value, currentRoom.value.id)
+	if (currentRoom.value && user.value) {
+		clientEmits.leaveRoom(user.value.name, currentRoom.value.id)
 		loading.value = false
 		roomName.value = null
 	}
@@ -249,4 +240,4 @@ function created() {
 	</div>
 </template>
 
-<style scoped src="./Video.scss"></style>
+<style scoped src="./VisioVideo.scss"></style>

@@ -1,0 +1,35 @@
+.visio-base {
+  height: 100vh;
+  display: flex;
+  justify-content: center;
+  align-items: center;
+
+  .meeting-page {
+    width: 100%;
+    height: 100%;
+    background: #ffffff;
+    display: flex;
+  }
+
+  .username-form {
+    font-family: 'Avenir', Helvetica, Arial, sans-serif;
+    text-align: center;
+    background: #ffffff;
+    padding: 20px;
+    border-radius: 15px;
+
+    .username-label {
+      color: #000000;
+    }
+
+    .username-input {
+      height: auto;
+    }
+  }
+}
+
+.button-hide-logs {
+  position: absolute;
+  top: 20px;
+  right: 20px;
+}

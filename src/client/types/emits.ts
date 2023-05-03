@@ -1,4 +1,4 @@
-import type { Auth, Room } from '@/client/types/business'
+import type { Auth, AvatarEventInput, Room } from '@/client/types/business'
 
 export interface Emit {
 	event: string
@@ -24,7 +24,7 @@ export interface GetRoomsEmit extends Emit {
 	}
 }
 
-export interface createRoomEmit extends Emit {
+export interface CreateRoomEmit extends Emit {
 	event: '@createRoom'
 	payload: {
 		username: string
@@ -35,22 +35,34 @@ export interface createRoomEmit extends Emit {
 	}
 }
 
-export interface joinRoomEmit extends Emit {
+export interface JoinRoomEmit extends Emit {
 	event: '@joinRoom'
 	payload: {
 		username: string
-		roomId: string
+		roomId: number
 	}
 	response: {
 		room: Room
 	}
 }
 
-export interface leaveRoomEmit extends Emit {
+export interface LeaveRoomEmit extends Emit {
 	event: '@leaveRoom'
 	payload: {
 		username: string
-		roomId: string
+		roomId: number
+	}
+	response: {
+		room: Room
+	}
+}
+
+export interface SendAvatarDataEmit extends Emit {
+	event: '@sendAvatarData'
+	payload: {
+		username: string
+		roomId: number
+		avatar: AvatarEventInput
 	}
 	response: {
 		room: Room

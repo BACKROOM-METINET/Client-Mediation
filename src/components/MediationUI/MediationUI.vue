@@ -1,6 +1,6 @@
 <script setup lang="ts">
 import { toRefs } from 'vue'
-import type { Expression } from '@/client/types/business'
+import type { Emotion } from '@/client/types/business'
 import CameraIcon from '@/components/icons/CameraIcon.vue'
 import CameraOffIcon from '@/components/icons/CameraOffIcon.vue'
 import EyeIcon from '@/components/icons/EyeIcon.vue'
@@ -14,7 +14,7 @@ const scene = useSceneStore()
 const { fpsCounter } = toRefs(scene)
 
 const props = defineProps<{
-	expression: Expression
+	expression: Emotion
 	isCameraPreviewActive: boolean
 	isHolisticActivated: boolean
 	isHolisticLoading: boolean

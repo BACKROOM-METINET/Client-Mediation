@@ -8,7 +8,6 @@ export const client = new Client()
 export function useLowLevelClient() {
 	async function connect(username: string): Promise<any> {
 		authenticating.value = true
-
 		client.reinitializeConnection()
 
 		try {

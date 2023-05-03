@@ -1,8 +1,9 @@
 <script setup lang="ts">
 import { ref } from 'vue'
 import { emitter } from '@/client/events/event'
+import type { VisioLog } from '@/client/types/business'
 
-const logs = ref([])
+const logs = ref<VisioLog[]>([])
 const logCount = ref(0)
 
 created()
@@ -23,4 +24,4 @@ function created() {
 	</div>
 </template>
 
-<style scoped src="./Log.scss"></style>
+<style scoped src="./VisioLog.scss"></style>

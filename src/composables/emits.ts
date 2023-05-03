@@ -1,11 +1,13 @@
 import type {
-	createRoomEmit,
+	CreateRoomEmit,
 	GetRoomsEmit,
-	joinRoomEmit,
-	leaveRoomEmit,
+	JoinRoomEmit,
+	LeaveRoomEmit,
+	SendAvatarDataEmit,
 } from '@/client/types/emits'
 import { useLowLevelClient } from '@/client/useLowLevelClient'
 import { useRoomStore } from '@/stores/room'
+import type { AvatarEventInput } from '../client/types/business'
 
 export function useHighLevelClientEmits() {
 	const client = useLowLevelClient()
@@ -19,7 +21,7 @@ export function useHighLevelClientEmits() {
 		},
 
 		async createRoom(username: string, roomName: string) {
-			const response = await client.emit<createRoomEmit>('@createRoom', {
+			const response = await client.emit<CreateRoomEmit>('@createRoom', {
 				username: username,
 				roomName: roomName,
 			})
@@ -31,8 +33,8 @@ export function useHighLevelClientEmits() {
 			return response
 		},
 
-		async joinRoom(username: string, roomId: string) {
-			const response = await client.emit<joinRoomEmit>('@joinRoom', {
+		async joinRoom(username: string, roomId: number) {
+			const response = await client.emit<JoinRoomEmit>('@joinRoom', {
 				username: username,
 				roomId: roomId,
 			})
@@ -43,11 +45,31 @@ export function useHighLevelClientEmits() {
 			return response
 		},
 
-		async leaveRoom(username: string, roomId: string) {
-			const response = await client.emit<leaveRoomEmit>('@leaveRoom', {
+		async leaveRoom(username: string, roomId: number) {
+			const response = await client.emit<LeaveRoomEmit>('@leaveRoom', {
 				username: username,
 				roomId: roomId,
 			})
+
+			const { room } = response
+			roomStore.setCurrentRoomId(null)
+			roomStore.upsertRoom(room)
+			return response
+		},
+
+		async sendAvatarData(
+			username: string,
+			roomId: number,
+			avatar: AvatarEventInput
+		) {
+			const response = await client.emit<SendAvatarDataEmit>(
+				'@sendAvatarData',
+				{
+					username,
+					roomId,
+					avatar,
+				}
+			)
 
 			const { room } = response
 			roomStore.setCurrentRoomId(null)

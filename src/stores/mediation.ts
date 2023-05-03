@@ -7,7 +7,7 @@ import '@babylonjs/loaders/OBJ/objFileLoader'
 import * as Comlink from 'comlink'
 import { defineStore } from 'pinia'
 import { ref, type Ref, toRefs, computed } from 'vue'
-import type { Expression } from '@/client/types/business'
+import type { Emotion } from '@/client/types/business'
 import type { MediationConfig } from '@/client/types/config'
 import type { Pose, poseWrapper } from '@/client/workers/pose-processing'
 import { useSceneStore } from './babylon-js/scene'
@@ -22,7 +22,7 @@ export const useMediationStore = defineStore('mediation', () => {
 	// States
 
 	let webSocketExpression: WebSocket | null = null
-	const expression: Ref<Expression> = ref('Neutral')
+	const expression: Ref<Emotion> = ref('Neutral')
 	const worker: Ref<Worker | null> = ref(null)
 	const poseWorker: Ref<Comlink.Remote<Pose> | null> = ref(null)
 
@@ -77,11 +77,11 @@ export const useMediationStore = defineStore('mediation', () => {
 	}
 
 	function startExpressionConnection(videoSource: HTMLVideoElement) {
-		console.log('🤖 AI Server Expression : Connection...')
+		console.log('🤖 AI Server Emotion : Connection...')
 		webSocketExpression = new WebSocket('ws://localhost:8765')
 
 		webSocketExpression.onopen = () => {
-			console.log('🤖 AI Server Expression : Connection established !')
+			console.log('🤖 AI Server Emotion : Connection established !')
 			const img = document.createElement('img')
 			img.style.display = 'none'
 			document.body.appendChild(img)
