@@ -3,9 +3,12 @@ import axios from 'axios'
 import Twilio, {
 	createLocalVideoTrack,
 	Room,
-	RemoteVideoTrackPublication,
+	RemoteParticipant,
+	RemoteTrackPublication,
+	type RemoteTrack,
+	RemoteVideoTrack,
 } from 'twilio-video'
-import { Ref, ref, toRefs } from 'vue'
+import { type Ref, ref, toRefs } from 'vue'
 import { emitter } from '@/client/events/event'
 import { useHighLevelClientEmits } from '@/composables/emits'
 import { useAuthStore } from '@/stores/auth'
@@ -40,31 +43,41 @@ function dispatchLog(message: string) {
 }
 
 // Attach the Tracks to the DOM.
-function attachTracks(tracks: any, container: any) {
-	tracks.forEach((t: RemoteVideoTrackPublication) => {
+function attachTracks(
+	tracks: RemoteTrackPublication[],
+	container: HTMLElement
+) {
+	tracks.forEach((t: RemoteTrackPublication) => {
 		if (t.kind === 'video' && t.track) {
-			container.appendChild(t.track.attach())
+			container.appendChild((t.track as RemoteVideoTrack).attach())
 		}
 	})
 }
 
 // Attach the Participant's Tracks to the DOM.
-function attachParticipantTracks(participant: any, container: any) {
+function attachParticipantTracks(
+	participant: RemoteParticipant,
+	container: HTMLElement
+) {
 	const tracks = Array.from(participant.tracks.values())
 	attachTracks(tracks, container)
 }
 
 // Detach the Tracks from the DOM.
-function detachTracks(tracks: any) {
-	tracks.forEach((t: RemoteVideoTrackPublication) => {
-		t.track?.detach().forEach((detachedElement: HTMLMediaElement) => {
-			detachedElement.remove()
-		})
+function detachTracks(tracks: RemoteTrackPublication[]) {
+	tracks.forEach((t: RemoteTrackPublication) => {
+		if (t.kind === 'video' && t.track) {
+			;(t.track as RemoteVideoTrack)
+				.detach()
+				.forEach((detachedElement: HTMLMediaElement) => {
+					detachedElement.remove()
+				})
+		}
 	})
 }
 
 // Detach the Participant's Tracks from the DOM.
-function detachParticipantTracks(participant: any) {
+function detachParticipantTracks(participant: RemoteParticipant) {
 	const tracks = Array.from(participant.tracks.values())
 	detachTracks(tracks)
 }
@@ -120,29 +133,45 @@ function createChat(room_name: any) {
 					dispatchLog(participant.identity + ' is already here !')
 				}
 				const previewContainer = document.getElementById('localTrack')
+				if (!previewContainer) return
 				attachParticipantTracks(participant, previewContainer)
 			})
 
 			// When a Participant joins the Room, log the event.
-			room.on('participantConnected', function (participant: any) {
+			room.on('participantConnected', (participant: RemoteParticipant) => {
 				dispatchLog("Joining: '" + participant.identity + "'")
 			})
 
 			// When a Participant adds a Track, attach it to the DOM.
-			room.on('trackSubscribed', function (track: any, participant: any) {
-				dispatchLog(participant.identity + ' added track: ' + track.kind)
-				const previewContainer = document.getElementById('remoteTrack')
-				attachTracks([track], previewContainer)
-			})
+			room.on(
+				'trackSubscribed',
+				(
+					track: RemoteTrack,
+					publication: RemoteTrackPublication,
+					participant: RemoteParticipant
+				) => {
+					dispatchLog(participant.identity + ' added track: ' + track.kind)
+					const previewContainer = document.getElementById('remoteTrack')
+					if (!previewContainer) return
+					attachTracks([publication], previewContainer)
+				}
+			)
 
 			// When a Participant removes a Track, detach it from the DOM.
-			room.on('trackUnsubscribed', function (track: any, participant: any) {
-				dispatchLog(participant.identity + ' removed track: ' + track.kind)
-				detachTracks([track])
-			})
+			room.on(
+				'trackUnsubscribed',
+				(
+					track: RemoteTrack,
+					publication: RemoteTrackPublication,
+					participant: RemoteParticipant
+				) => {
+					dispatchLog(participant.identity + ' removed track: ' + track.kind)
+					detachTracks([publication])
+				}
+			)
 
 			// When a Participant leaves the Room, detach its Tracks.
-			room.on('participantDisconnected', function (participant: any) {
+			room.on('participantDisconnected', (participant: RemoteParticipant) => {
 				dispatchLog("Participant '" + participant.identity + "' left the room")
 				detachParticipantTracks(participant)
 			})
