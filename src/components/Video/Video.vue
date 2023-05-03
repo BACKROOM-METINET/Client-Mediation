@@ -1,6 +1,10 @@
 <script setup lang="ts">
 import axios from 'axios'
-import Twilio, { createLocalVideoTrack, Room } from 'twilio-video'
+import Twilio, {
+	createLocalVideoTrack,
+	Room,
+	RemoteVideoTrackPublication,
+} from 'twilio-video'
 import { Ref, ref, toRefs } from 'vue'
 import { emitter } from '@/client/events/event'
 import { useHighLevelClientEmits } from '@/composables/emits'
@@ -26,7 +30,7 @@ created()
 
 async function getAccessToken() {
 	return await axios.get(
-		`http://localhost:3000/token?identity=${props.username}`
+		`http://192.168.69.67:3000/token?identity=${props.username}`
 	)
 }
 
@@ -37,9 +41,9 @@ function dispatchLog(message: string) {
 
 // Attach the Tracks to the DOM.
 function attachTracks(tracks: any, container: any) {
-	tracks.forEach(function (track: any) {
-		if (track.kind === 'video') {
-			container.appendChild(track.track.attach())
+	tracks.forEach((t: RemoteVideoTrackPublication) => {
+		if (t.kind === 'video' && t.track) {
+			container.appendChild(t.track.attach())
 		}
 	})
 }
@@ -52,8 +56,8 @@ function attachParticipantTracks(participant: any, container: any) {
 
 // Detach the Tracks from the DOM.
 function detachTracks(tracks: any) {
-	tracks.forEach((track: any) => {
-		track.detach().forEach((detachedElement: any) => {
+	tracks.forEach((t: RemoteVideoTrackPublication) => {
+		t.track?.detach().forEach((detachedElement: HTMLMediaElement) => {
 			detachedElement.remove()
 		})
 	})
@@ -125,14 +129,14 @@ function createChat(room_name: any) {
 			})
 
 			// When a Participant adds a Track, attach it to the DOM.
-			room.on('trackAdded', function (track: any, participant: any) {
+			room.on('trackSubscribed', function (track: any, participant: any) {
 				dispatchLog(participant.identity + ' added track: ' + track.kind)
 				const previewContainer = document.getElementById('remoteTrack')
 				attachTracks([track], previewContainer)
 			})
 
 			// When a Participant removes a Track, detach it from the DOM.
-			room.on('trackRemoved', function (track: any, participant: any) {
+			room.on('trackUnsubscribed', function (track: any, participant: any) {
 				dispatchLog(participant.identity + ' removed track: ' + track.kind)
 				detachTracks([track])
 			})

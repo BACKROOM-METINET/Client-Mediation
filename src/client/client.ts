@@ -12,7 +12,7 @@ export default class Client {
 	private endpoint: string
 
 	constructor(
-		endpoint: string = 'ws://localhost:3000',
+		endpoint: string = 'ws://192.168.69.67:3000',
 		title: string = 'user'
 	) {
 		this.title = title
