@@ -162,6 +162,12 @@ function toggleParticipantMenu() {
 						{{ participant.name }}
 					</span>
 					<img
+						v-if="participant.isMe"
+						width="20"
+						:src="`src/assets/img/emoji_${emotion.toLocaleLowerCase()}.svg`"
+						alt="your emotion" />
+					<img
+						v-else
 						width="20"
 						:src="`src/assets/img/emoji_${participant.emotion.toLocaleLowerCase()}.svg`"
 						alt="your emotion" />
