@@ -68,3 +68,12 @@ export interface SendAvatarDataEmit extends Emit {
 		room: Room
 	}
 }
+
+export interface StartMediationEmit extends Emit {
+	event: '@startMediation'
+	payload: {
+		username: string
+		roomId: number
+	}
+	response: { room: Room }
+}

@@ -43,3 +43,11 @@ export interface AvatarDataEvent extends Event {
 		data: AvatarEventInput
 	}
 }
+
+export interface MediationStartedEvent extends Event {
+	event: '@MediationStarted'
+	payload: {
+		room: Room
+		mediator: string
+	}
+}

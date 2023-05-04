@@ -4,6 +4,7 @@ import type {
 	JoinRoomEmit,
 	LeaveRoomEmit,
 	SendAvatarDataEmit,
+	StartMediationEmit,
 } from '@/client/types/emits'
 import { useLowLevelClient } from '@/client/useLowLevelClient'
 import { useRoomStore } from '@/stores/room'
@@ -73,6 +74,20 @@ export function useHighLevelClientEmits() {
 
 			const { room } = response
 			roomStore.setCurrentRoomId(null)
+			roomStore.upsertRoom(room)
+			return response
+		},
+
+		async startMediation(username: string, roomId: number) {
+			const response = await client.emit<StartMediationEmit>(
+				'@startMediation',
+				{
+					username,
+					roomId,
+				}
+			)
+
+			const { room } = response
 			roomStore.upsertRoom(room)
 			return response
 		},

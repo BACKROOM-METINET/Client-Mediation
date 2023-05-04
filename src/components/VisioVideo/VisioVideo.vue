@@ -103,6 +103,8 @@ function leaveRoom() {
 }
 
 function startMeeting() {
+	if (!currentRoom.value || !user.value) return
+	clientEmits.startMediation(user.value.name, currentRoom.value.id)
 	router.push({
 		name: 'mediation',
 	})

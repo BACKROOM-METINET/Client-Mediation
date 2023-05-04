@@ -1,5 +1,7 @@
+import { useRouter } from 'vue-router'
 import type {
 	AvatarDataEvent,
+	MediationStartedEvent,
 	ParticipantAddedEvent,
 	ParticipantRemovedEvent,
 	RoomCreatedEvent,
@@ -12,6 +14,7 @@ export function listenHighLevelClientEvents() {
 	const client = useLowLevelClient()
 
 	const roomStore = useRoomStore()
+	const router = useRouter()
 
 	client.on<RoomCreatedEvent>('@RoomCreated', async ({ room }) => {
 		roomStore.upsertRoom(room)
@@ -39,6 +42,15 @@ export function listenHighLevelClientEvents() {
 		'@AvatarData',
 		async ({ roomId, username, data }) => {
 			roomStore.upsertParticipant(roomId, username, data)
+		}
+	)
+
+	client.on<MediationStartedEvent>(
+		'@MediationStarted',
+		async ({ room, mediator }) => {
+			console.log(`Mediation start by ${mediator} in room "${room.name}"`)
+			roomStore.upsertRoom(room)
+			router.push({ name: 'mediation' })
 		}
 	)
 }

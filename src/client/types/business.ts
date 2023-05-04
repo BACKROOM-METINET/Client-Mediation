@@ -73,6 +73,8 @@ export interface AvatarEventInput extends AvatarData {
 
 export type Role = 'mediator' | 'lawyer' | 'user'
 
+export type RoomState = 'waiting' | 'mediation' | 'finish'
+
 export interface ParticipantEvent {
 	name: string
 	role: Role
@@ -89,6 +91,7 @@ export interface Participant extends ParticipantEvent {
 export interface Room {
 	id: number
 	name: string
+	state: RoomState
 	participants: Participant[]
 }
 
