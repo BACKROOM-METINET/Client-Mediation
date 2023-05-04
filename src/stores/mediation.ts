@@ -11,10 +11,10 @@ import type { AvatarData, Emotion } from '@/client/types/business'
 import type { MediationConfig } from '@/client/types/config'
 import type { Pose, poseWrapper } from '@/client/workers/pose-processing'
 import { useHighLevelClientEmits } from '@/composables/emits'
+import { EMOTION_AI_SERVER } from '@/constants'
 import { useSceneStore } from './babylon-js/scene'
 import { useHolisticStore } from './holistic'
 import { useRoomStore } from './room'
-import { EMOTION_AI_SERVER } from '@/constants'
 
 export const useMediationStore = defineStore('mediation', () => {
 	// Stores
