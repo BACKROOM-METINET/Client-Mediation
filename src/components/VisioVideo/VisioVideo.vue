@@ -59,6 +59,18 @@ function attachTracks(
 	tracks.forEach((t: RemoteTrackPublication) => {
 		if (t.kind === 'video' && t.track) {
 			container.appendChild((t.track as RemoteVideoTrack).attach())
+
+			const htmlVideoElements = container.getElementsByTagName('video')
+
+			if (!htmlVideoElements) return
+
+			const htmlVideoElement = htmlVideoElements.item(
+				htmlVideoElements.length - 1
+			)
+
+			if (!htmlVideoElement) return
+
+			htmlVideoElement.style.maxWidth = '100%'
 		}
 	})
 }
