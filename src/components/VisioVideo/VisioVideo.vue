@@ -70,7 +70,7 @@ function attachTracks(
 
 			if (!htmlVideoElement) return
 
-			htmlVideoElement.style.maxWidth = '100%'
+			htmlVideoElement.style.height = '50%'
 		}
 	})
 }
@@ -151,7 +151,7 @@ function createChat(room_name: any) {
 		// remove any remote track when joining a new room
 		const remoteTrack = document.getElementById('remoteTrack')
 		if (!remoteTrack) return
-		remoteTrack.innerHTML = ''
+		// remoteTrack.innerHTML = ''
 
 		Twilio.connect(token, connectOptions).then(function (room: Room) {
 			// console.log('Successfully joined a Room: ', room);
@@ -228,14 +228,6 @@ function createChat(room_name: any) {
 
 					localMediaContainer.appendChild(track.attach())
 
-					const htmlVideoElement = localMediaContainer
-						.getElementsByTagName('video')
-						.item(0)
-
-					if (!htmlVideoElement) return
-
-					htmlVideoElement.style.maxWidth = '100%'
-
 					localTrack.value = true
 				})
 			}
@@ -261,9 +253,7 @@ function created() {
 			<span v-else-if="!loading && roomName">Connected to {{ roomName }}</span>
 			<span v-else>Select a room to get started</span>
 		</div>
-		<div class="row remote_video_container">
-			<div id="remoteTrack"></div>
-		</div>
+		<div id="remoteTrack"></div>
 		<div id="localTrack"></div>
 		<div v-if="currentRoom" class="video-buttons">
 			<button class="button-hide-logs btn btn-danger" @click="leaveRoom">
