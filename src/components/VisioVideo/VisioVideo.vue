@@ -85,7 +85,10 @@ function attachParticipantTracks(
 }
 
 // Detach the Tracks from the DOM.
-function detachTracks(tracks: RemoteTrackPublication[]) {
+function detachTracks(
+	tracks: RemoteTrackPublication[],
+	container: HTMLElement
+) {
 	tracks.forEach((t: RemoteTrackPublication) => {
 		if (t.kind === 'video' && t.track) {
 			;(t.track as RemoteVideoTrack)
@@ -94,20 +97,19 @@ function detachTracks(tracks: RemoteTrackPublication[]) {
 					detachedElement.remove()
 				})
 		}
+		while (container.firstChild) {
+			container.removeChild(container.firstChild)
+		}
 	})
 }
 
 // Detach the Participant's Tracks from the DOM.
-function detachParticipantTracks(participant: RemoteParticipant) {
+function detachParticipantTracks(
+	participant: RemoteParticipant,
+	container: HTMLElement
+) {
 	const tracks = Array.from(participant.tracks.values())
-	detachTracks(tracks)
-}
-
-// Leave Room.
-function leaveRoomIfJoined() {
-	if (activeRoom.value) {
-		activeRoom.value.disconnect()
-	}
+	detachTracks(tracks, container)
 }
 
 function leaveRoom() {
@@ -115,6 +117,7 @@ function leaveRoom() {
 		clientEmits.leaveRoom(user.value.name, currentRoom.value.id)
 		loading.value = false
 		roomName.value = null
+		emitter.emit('leave_room')
 	}
 }
 
@@ -174,6 +177,14 @@ function createChat(room_name: any) {
 				dispatchLog("Joining: '" + participant.identity + "'")
 			})
 
+			// When a Participant leaves the Room, detach its Tracks.
+			room.on('participantDisconnected', (participant: RemoteParticipant) => {
+				dispatchLog("Participant '" + participant.identity + "' left the room")
+				const previewContainer = document.getElementById('remoteTrack')
+				if (!previewContainer) return
+				detachParticipantTracks(participant, previewContainer)
+			})
+
 			// When a Participant adds a Track, attach it to the DOM.
 			room.on(
 				'trackSubscribed',
@@ -198,14 +209,14 @@ function createChat(room_name: any) {
 					participant: RemoteParticipant
 				) => {
 					dispatchLog(participant.identity + ' removed track: ' + track.kind)
-					detachTracks([publication])
+					const previewContainer = document.getElementById('remoteTrack')
+					if (!previewContainer) return
+					detachTracks([publication], previewContainer)
 				}
 			)
 
-			// When a Participant leaves the Room, detach its Tracks.
-			room.on('participantDisconnected', (participant: RemoteParticipant) => {
-				dispatchLog("Participant '" + participant.identity + "' left the room")
-				detachParticipantTracks(participant)
+			emitter.on('leave_room', () => {
+				room.disconnect()
 			})
 
 			// if local preview is not active, create it
@@ -217,7 +228,7 @@ function createChat(room_name: any) {
 
 					localMediaContainer.appendChild(track.attach())
 
-					const htmlVideoElement = document
+					const htmlVideoElement = localMediaContainer
 						.getElementsByTagName('video')
 						.item(0)
 
@@ -239,7 +250,7 @@ function created() {
 
 	// When a user is about to transition away from this page,
 	// disconnect from the room, if joined.
-	window.addEventListener('beforeunload', leaveRoomIfJoined)
+	// window.addEventListener('beforeunload', leaveRoomIfJoined)
 }
 </script>
 
