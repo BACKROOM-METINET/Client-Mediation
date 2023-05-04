@@ -120,7 +120,6 @@ export function loadMesh() {
 			'dummy3.babylon',
 			scene,
 			(meshes) => {
-				// console.log(meshes)
 				meshes.forEach((mesh) => {
 					if (mesh.name === 'YBot') return
 					mesh.scaling.scaleInPlace(3.6)
@@ -266,7 +265,7 @@ export function loadMesh() {
 		)
 	}
 
-	const character = async (scene: Scene, config: ChairConfig) => {
+	const character = async (scene: Scene) => {
 		const doorPosition = scene.meshes
 			.find((mesh) => mesh.name === 'doorInterior_primitive2')
 			?.getAbsolutePosition()
@@ -369,34 +368,24 @@ export function loadMesh() {
 
 		avatar.actionManager = new ActionManager(scene)
 
-		avatar.actionManager.registerAction(
+		setTimeout(async () => {
+			enableCharacterWalk(avatar, scene, animation)
+		}, 3000)
+
+		// code to activate walking on click on the character 
+		/* avatar.actionManager.registerAction(
 			new ExecuteCodeAction(ActionManager.OnPickTrigger, function () {
 				enableCharacterWalk(avatar, scene, animation)
 			})
-		)
+		) */
 			
-
-
 	}
 
 	const enableCharacterWalk = (avatar: AbstractMesh, scene: Scene, animation: AnimationGroup) => {
-		// animation = walking from the model 
 		try {
 			animation.start()
 			scene.beginAnimation(avatar, 0, 100, false, undefined, () => {
 				animation.stop()
-				// avatar.position = new Vector3(
-				// 	(config.tableRayon + DISTANCE_HELPERS) *
-				// 		Math.cos(degToRad((360 / config.membersNumber) * config.order)),
-				// 	-1.4,
-				// 	(config.tableRayon + DISTANCE_HELPERS) *
-				// 		Math.sin(degToRad((360 / config.membersNumber) * config.order))
-				// )
-				// avatar.rotation = new Vector3(
-				// 	0,
-				// 	degToRad((-360 / config.membersNumber) * config.order - 90),
-				// 	0
-				// )
 			})
 		} catch (e) {
 			// do nothing
