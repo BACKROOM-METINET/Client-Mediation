@@ -217,7 +217,7 @@ function createChat(room_name: any) {
 
 					localMediaContainer.appendChild(track.attach())
 
-					const htmlVideoElement = document
+					const htmlVideoElement = localMediaContainer
 						.getElementsByTagName('video')
 						.item(0)
 
