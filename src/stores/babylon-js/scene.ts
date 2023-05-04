@@ -9,6 +9,7 @@ import {
 import type * as Comlink from 'comlink'
 import { defineStore } from 'pinia'
 import { ref, computed, toRefs, type Ref } from 'vue'
+import { Hand } from '@/client/class/hands'
 import { getMaterial } from '@/client/helpers/materials'
 import { getMesh, loadMesh } from '@/client/helpers/mesh'
 import { loadSkybox } from '@/client/helpers/skybox'
@@ -98,30 +99,30 @@ export const useSceneStore = defineStore('scene', () => {
 			cameraRef.value.setTarget(Vector3.Zero())
 			cameraRef.value.attachControl(canvas, true)
 			// Avatar
-			// avatar.value = {
-			// 	hands: {
-			// 		right: new Hand(
-			// 			'rightHandRef',
-			// 			sceneRef.value as Scene,
-			// 			{
-			// 				x: cameraRef.value.position.x + 3,
-			// 				y: cameraRef.value.position.y - 3,
-			// 				z: -3,
-			// 			},
-			// 			materials.materialRed(sceneRef.value as Scene)
-			// 		),
-			// 		left: new Hand(
-			// 			'leftHandRef',
-			// 			sceneRef.value as Scene,
-			// 			{
-			// 				x: cameraRef.value.position.x - 3,
-			// 				y: cameraRef.value.position.y - 3,
-			// 				z: -3,
-			// 			},
-			// 			materials.materialBlue(sceneRef.value as Scene)
-			// 		),
-			// 	},
-			// }
+			avatar.value = {
+				hands: {
+					right: new Hand(
+						'rightHandRef',
+						sceneRef.value as Scene,
+						{
+							x: cameraRef.value.position.x + 3,
+							y: cameraRef.value.position.y - 3,
+							z: -3,
+						},
+						materials.materialRed(sceneRef.value as Scene)
+					),
+					left: new Hand(
+						'leftHandRef',
+						sceneRef.value as Scene,
+						{
+							x: cameraRef.value.position.x - 3,
+							y: cameraRef.value.position.y - 3,
+							z: -3,
+						},
+						materials.materialBlue(sceneRef.value as Scene)
+					),
+				},
+			}
 
 			// Import Meshes
 			meshesLoader.mediationRoom(sceneRef.value as Scene, config.scene)
@@ -163,8 +164,8 @@ export const useSceneStore = defineStore('scene', () => {
 		remote.camera.then((_camera) =>
 			cameraStore.setCameraRotation(_camera.rotation.x, _camera.rotation.y)
 		)
-		// remote.handLeft.then((hand) => avatarRef.value?.hands.left.update(hand))
-		// remote.handRight.then((hand) => avatarRef.value?.hands.right.update(hand))
+		remote.handLeft.then((hand) => avatarRef.value?.hands.left.update(hand))
+		remote.handRight.then((hand) => avatarRef.value?.hands.right.update(hand))
 	}
 
 	return {
