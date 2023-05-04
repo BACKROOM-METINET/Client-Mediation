@@ -55,7 +55,6 @@ export const useMediationStore = defineStore('mediation', () => {
 		poseWorker.value = await new remoteComlink.pose()
 
 		// Start BabylonJS
-		if (currentRoom.value) sceneStore.setRoomRef(currentRoom.value.participants)
 		sceneStore.render(babylonCanvas, poseWorker.value, config)
 
 		// Start Holistic
@@ -70,7 +69,7 @@ export const useMediationStore = defineStore('mediation', () => {
 							clientEmits.sendAvatarData(
 								currentUser.value.name,
 								currentRoom.value.id,
-								{ ...avatarData, emotion: emotion.value }
+								{ ...avatarData }
 							)
 						}
 						sceneStore.onHolisticResult(
@@ -130,6 +129,19 @@ export const useMediationStore = defineStore('mediation', () => {
 				const msg = JSON.parse(event.data)
 				if (msg.event === '@ExpressionResult') {
 					emotion.value = msg.result ?? 'Neutral'
+
+					if (currentUser.value && currentRoom.value) {
+						roomStore.upsertParticipant(
+							currentRoom.value.id,
+							currentUser.value.name,
+							{ emotion: emotion.value }
+						)
+						clientEmits.sendAvatarData(
+							currentUser.value.name,
+							currentRoom.value.id,
+							{ emotion: emotion.value }
+						)
+					}
 				}
 			}
 		}

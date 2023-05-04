@@ -1,17 +1,21 @@
 <script setup lang="ts">
-import { toRefs } from 'vue'
+import { computed, ref, toRefs } from 'vue'
 import type { Emotion } from '@/client/types/business'
 import CameraIcon from '@/components/icons/CameraIcon.vue'
 import CameraOffIcon from '@/components/icons/CameraOffIcon.vue'
 import EyeIcon from '@/components/icons/EyeIcon.vue'
 import EyeSlashIcon from '@/components/icons/EyeSlashIcon.vue'
+import ParticipantsIcon from '@/components/icons/ParticipantsIcon.vue'
 import SettingIcon from '@/components/icons/SettingIcon.vue'
 import { useSceneStore } from '@/stores/babylon-js/scene'
+import { useRoomStore } from '@/stores/room'
 import { useSettingStore } from '@/stores/setting'
 
 const settings = useSettingStore()
 const scene = useSceneStore()
+const room = useRoomStore()
 const { fpsCounter } = toRefs(scene)
+const { currentRoom } = toRefs(room)
 
 const props = defineProps<{
 	emotion: Emotion
@@ -25,6 +29,10 @@ const emits = defineEmits<{
 	(event: 'enable-holistic'): void
 	(event: 'disable-holistic'): void
 }>()
+
+const participants = computed(() => currentRoom.value?.participants ?? [])
+
+const participantMenuOpen = ref(false)
 
 function openConfigMenu() {
 	emits('open-config')
@@ -46,6 +54,10 @@ function enableHolistic() {
 function disableHolistic() {
 	emits('disable-holistic')
 	settings.setHolisticActivated(false)
+}
+
+function toggleParticipantMenu() {
+	participantMenuOpen.value = !participantMenuOpen.value
 }
 </script>
 
@@ -118,7 +130,43 @@ function disableHolistic() {
 						<EyeIcon></EyeIcon>
 					</button>
 				</li>
+				<li>
+					<button
+						id="btn-participants-list"
+						type="button"
+						class="over-item"
+						title="Participants List"
+						@click="toggleParticipantMenu()">
+						<ParticipantsIcon></ParticipantsIcon>
+					</button>
+				</li>
 			</ul>
+		</div>
+		<div v-if="participantMenuOpen" class="participants-menu">
+			<span class="menu-header">
+				Participants : {{ currentRoom?.participants.length }}
+			</span>
+			<hr />
+			<div class="menu-content">
+				<div
+					v-for="participant of participants"
+					class="participant-data"
+					:key="participant.name"
+					:title="`role : ${participant.role}`">
+					<span
+						:class="{
+							me: participant.isMe,
+							mediator: participant.role === 'mediator',
+							lawyer: participant.role === 'lawyer',
+						}">
+						{{ participant.name }}
+					</span>
+					<img
+						width="20"
+						:src="`src/assets/img/emoji_${participant.emotion.toLocaleLowerCase()}.svg`"
+						alt="your emotion" />
+				</div>
+			</div>
 		</div>
 		<div class="fps-counter">{{ fpsCounter }} fps</div>
 	</div>

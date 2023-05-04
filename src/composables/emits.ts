@@ -73,7 +73,6 @@ export function useHighLevelClientEmits() {
 			)
 
 			const { room } = response
-			roomStore.setCurrentRoomId(null)
 			roomStore.upsertRoom(room)
 			return response
 		},
