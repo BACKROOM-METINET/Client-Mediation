@@ -8,8 +8,9 @@ import Twilio, {
 	type RemoteTrack,
 	RemoteVideoTrack,
 } from 'twilio-video'
-import { type Ref, ref, toRefs } from 'vue'
+import { computed, type Ref, ref, toRefs } from 'vue'
 import { emitter } from '@/client/events/event'
+import type { Participant } from '@/client/types/business'
 import { useHighLevelClientEmits } from '@/composables/emits'
 import { useAuthStore } from '@/stores/auth'
 import { useRoomStore } from '@/stores/room'
@@ -28,6 +29,16 @@ const loading = ref(false)
 const localTrack = ref(false)
 const activeRoom: Ref<Room | null> = ref(null)
 const roomName = ref(null)
+
+const isMediator = computed(() => {
+	if (!currentRoom.value) return
+	const mediatorParticipant = currentRoom.value.participants.find(
+		(participant: Participant) => participant.role === 'mediator'
+	)
+	if (!mediatorParticipant) return false
+
+	return mediatorParticipant.name === user.value.name
+})
 
 created()
 
@@ -97,6 +108,8 @@ function leaveRoom() {
 	}
 }
 
+function startMeeting() {}
+
 function createChat(room_name: any) {
 	loading.value = true
 
@@ -132,7 +145,7 @@ function createChat(room_name: any) {
 				if (participant.identity !== props.username) {
 					dispatchLog(participant.identity + ' is already here !')
 				}
-				const previewContainer = document.getElementById('localTrack')
+				const previewContainer = document.getElementById('remoteTrack')
 				if (!previewContainer) return
 				attachParticipantTracks(participant, previewContainer)
 			})
@@ -222,12 +235,17 @@ function created() {
 			<div id="remoteTrack"></div>
 		</div>
 		<div id="localTrack"></div>
-		<button
-			v-if="currentRoom"
-			class="button-hide-logs btn btn-primary"
-			@click="leaveRoom">
-			leave Room
-		</button>
+		<div v-if="currentRoom" class="video-buttons">
+			<button class="button-hide-logs btn btn-danger" @click="leaveRoom">
+				{{ isMediator ? 'Close meeting' : 'Leave room' }}
+			</button>
+			<button
+				v-if="isMediator"
+				class="button-hide-logs btn btn-primary"
+				@click="startMeeting">
+				Start meeting
+			</button>
+		</div>
 	</div>
 </template>
 

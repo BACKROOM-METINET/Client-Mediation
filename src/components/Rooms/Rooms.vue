@@ -17,9 +17,9 @@ const { user } = toRefs(authSore)
 
 async function joinRoom(room: Room) {
 	if (currentRoom.value) {
-		await clientEmits.leaveRoom(user.value.username, currentRoom.value.id)
+		await clientEmits.leaveRoom(user.value.name, currentRoom.value.id)
 	}
-	await clientEmits.joinRoom(user.value.username, room.id)
+	await clientEmits.joinRoom(user.value.name, room.id)
 	emitter.emit('show_room', room.name)
 }
 </script>
@@ -32,9 +32,12 @@ async function joinRoom(room: Room) {
 				v-for="room in rooms"
 				v-bind:key="room.id"
 				@click="joinRoom(room)">
-				<p>{{ room.name }}</p>
-				<br />
-				<p>{{ room.participants.length }}</p>
+				<div class="d-flex justify-content-between">
+					<p class="mb-0">
+						<strong>{{ room.name }}</strong>
+					</p>
+					<p class="mb-0">{{ room.participants.length }} connected</p>
+				</div>
 			</div>
 		</div>
 		<AddRoom />

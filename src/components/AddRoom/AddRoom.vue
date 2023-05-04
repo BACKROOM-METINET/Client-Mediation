@@ -22,9 +22,9 @@ async function createNewRoom() {
 	}
 
 	if (currentRoom.value) {
-		await clientEmits.leaveRoom(user.value.username, currentRoom.value.id)
+		await clientEmits.leaveRoom(user.value.name, currentRoom.value.id)
 	}
-	await clientEmits.createAndJoinRoom(user.value.username, roomName.value)
+	await clientEmits.createRoom(user.value.name, roomName.value)
 	emitter.emit('show_room', roomName.value)
 	roomName.value = ''
 }

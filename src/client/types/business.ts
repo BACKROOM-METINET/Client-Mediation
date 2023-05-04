@@ -67,14 +67,16 @@ export type Expression = 'Angry' | 'Happy' | 'Neutral' | 'Sad' | 'Surprise'
 export type Room = {
 	id: string
 	name: string
-	participants: []
+	participants: Participant[]
 }
 
 export type Auth = {
-	username: string
+	name: string
 }
 
+export type Role = 'mediator' | 'lawyer' | 'user'
+
 export type Participant = {
-	username: string
-	isMediator: boolean
+	name: string
+	role: Role
 }

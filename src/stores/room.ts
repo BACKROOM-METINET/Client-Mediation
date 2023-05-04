@@ -1,11 +1,11 @@
 import { defineStore } from 'pinia'
-import { ref, computed } from 'vue'
+import { ref, computed, type Ref, type ComputedRef } from 'vue'
 import type { Room } from '@/client/types/business'
 
 export const useRoomStore = defineStore('room', () => {
 	// State
 
-	const roomsRef = ref<Room[]>([])
+	const roomsRef: Ref<Room[]> = ref([])
 
 	const currentRoomId = ref<string | null>(null)
 
@@ -19,8 +19,8 @@ export const useRoomStore = defineStore('room', () => {
 		})
 	)
 
-	const currentRoom = computed(() => {
-		return rooms.value.find((room) => room.id === currentRoomId.value)
+	const currentRoom: ComputedRef<Room | undefined> = computed(() => {
+		return roomsRef.value.find((room) => room.id === currentRoomId.value)
 	})
 
 	return {
@@ -38,9 +38,7 @@ export const useRoomStore = defineStore('room', () => {
 	}
 
 	function upsertRoom(room: Room) {
-		const roomIndex = roomsRef.value.findIndex(
-			(_room) => _room.id === room.id
-		)
+		const roomIndex = roomsRef.value.findIndex((_room) => _room.id === room.id)
 
 		if (roomIndex !== -1) {
 			roomsRef.value[roomIndex] = { ...room }
