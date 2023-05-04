@@ -1,4 +1,9 @@
-import type { AvatarEventInput, ParticipantServer, Room } from './business'
+import type {
+	AvatarEventInput,
+	ParticipantServer,
+	Room,
+	RoomConfig,
+} from './business'
 
 export interface Event {
 	event: string
@@ -49,5 +54,6 @@ export interface MediationStartedEvent extends Event {
 	payload: {
 		room: Room
 		mediator: string
+		config: Required<RoomConfig>
 	}
 }

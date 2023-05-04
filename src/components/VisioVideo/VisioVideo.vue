@@ -12,16 +12,20 @@ import { computed, type Ref, ref, toRefs } from 'vue'
 import { useRouter } from 'vue-router'
 import { emitter } from '@/client/events/event'
 import { useHighLevelClientEmits } from '@/composables/emits'
+import { MEDIATION_BACK_SERVER } from '@/constants'
 import { useAuthStore } from '@/stores/auth'
 import { useRoomStore } from '@/stores/room'
+import { useSettingStore } from '@/stores/setting'
 
 const clientEmits = useHighLevelClientEmits()
 
 const roomStore = useRoomStore()
 const authSore = useAuthStore()
+const settingStore = useSettingStore()
 
 const router = useRouter()
 
+const { sceneRoomRef, sceneSkyboxRef } = toRefs(settingStore)
 const { currentRoom, currentParticipant } = toRefs(roomStore)
 const { user } = toRefs(authSore)
 
@@ -38,7 +42,7 @@ created()
 
 async function getAccessToken() {
 	return await axios.get(
-		`http://localhost:3000/token?identity=${props.username}`
+		`http://${MEDIATION_BACK_SERVER}/token?identity=${props.username}`
 	)
 }
 
@@ -104,7 +108,10 @@ function leaveRoom() {
 
 function startMeeting() {
 	if (!currentRoom.value || !user.value) return
-	clientEmits.startMediation(user.value.name, currentRoom.value.id)
+	clientEmits.startMediation(user.value.name, currentRoom.value.id, {
+		skybox_asset: sceneSkyboxRef.value,
+		room_asset: sceneRoomRef.value,
+	})
 	router.push({
 		name: 'mediation',
 	})

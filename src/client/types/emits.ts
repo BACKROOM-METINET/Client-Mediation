@@ -1,4 +1,9 @@
-import type { Auth, AvatarEventInput, Room } from '@/client/types/business'
+import type {
+	Auth,
+	AvatarEventInput,
+	Room,
+	RoomConfig,
+} from '@/client/types/business'
 
 export interface Emit {
 	event: string
@@ -74,6 +79,7 @@ export interface StartMediationEmit extends Emit {
 	payload: {
 		username: string
 		roomId: number
+		config: RoomConfig
 	}
 	response: { room: Room }
 }

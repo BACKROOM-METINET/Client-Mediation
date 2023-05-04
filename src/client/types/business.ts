@@ -1,6 +1,7 @@
 import type * as BABYLON from '@babylonjs/core'
 import type { GpuBuffer, Results } from '@mediapipe/holistic'
 import type { Hand } from '@/client/class/hands'
+import type { MeshRoomEnum, SkyboxEnum } from './meshes'
 export interface Coordinate {
 	x: number
 	y: number
@@ -88,10 +89,16 @@ export interface Participant extends ParticipantEvent {
 	avatar?: AvatarData
 }
 
+export interface RoomConfig {
+	skybox_asset?: keyof typeof SkyboxEnum
+	room_asset?: keyof typeof MeshRoomEnum
+}
+
 export interface Room {
 	id: number
 	name: string
 	state: RoomState
+	config?: RoomConfig
 	participants: Participant[]
 }
 

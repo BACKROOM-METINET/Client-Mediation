@@ -8,7 +8,7 @@ import type {
 } from '@/client/types/emits'
 import { useLowLevelClient } from '@/client/useLowLevelClient'
 import { useRoomStore } from '@/stores/room'
-import type { AvatarEventInput } from '../client/types/business'
+import type { AvatarEventInput, RoomConfig } from '../client/types/business'
 
 export function useHighLevelClientEmits() {
 	const client = useLowLevelClient()
@@ -78,12 +78,13 @@ export function useHighLevelClientEmits() {
 			return response
 		},
 
-		async startMediation(username: string, roomId: number) {
+		async startMediation(username: string, roomId: number, config: RoomConfig) {
 			const response = await client.emit<StartMediationEmit>(
 				'@startMediation',
 				{
 					username,
 					roomId,
+					config,
 				}
 			)
 

@@ -14,6 +14,7 @@ import { useHighLevelClientEmits } from '@/composables/emits'
 import { useSceneStore } from './babylon-js/scene'
 import { useHolisticStore } from './holistic'
 import { useRoomStore } from './room'
+import { EMOTION_AI_SERVER } from '@/constants'
 
 export const useMediationStore = defineStore('mediation', () => {
 	// Stores
@@ -100,34 +101,45 @@ export const useMediationStore = defineStore('mediation', () => {
 
 	function startEmotionConnection(videoSource: HTMLVideoElement) {
 		console.log('🤖 AI Server Emotion : Connection...')
-		webSocketEmotion = new WebSocket('ws://localhost:8765')
+		webSocketEmotion = new WebSocket(EMOTION_AI_SERVER)
 
-		webSocketEmotion.onopen = () => {
-			console.log('🤖 AI Server Emotion : Connection established !')
-			const img = document.createElement('img')
-			img.style.display = 'none'
-			document.body.appendChild(img)
-			async function captureImage() {
-				const canvas = document.createElement('canvas')
-				canvas.width = 300
-				canvas.height = 200
-				const ctx = canvas.getContext('2d')
-				if (!ctx) return
-				ctx.drawImage(videoSource, 0, 0, canvas.width, canvas.height)
+		function setWS() {
+			if (!webSocketEmotion) return
+			webSocketEmotion.onopen = () => {
+				console.log('🤖 AI Server Emotion : Connection established !')
+				const img = document.createElement('img')
+				img.style.display = 'none'
+				document.body.appendChild(img)
+				async function captureImage() {
+					const canvas = document.createElement('canvas')
+					canvas.width = 300
+					canvas.height = 200
+					const ctx = canvas.getContext('2d')
+					if (!ctx) return
+					ctx.drawImage(videoSource, 0, 0, canvas.width, canvas.height)
 
-				const imageURL = canvas.toDataURL('image/png')
+					const imageURL = canvas.toDataURL('image/png')
 
-				img.src = imageURL
-				img.onload = () => calcEmotion(img)
+					img.src = imageURL
+					img.onload = () => calcEmotion(img)
+				}
+				setInterval(captureImage, 1000)
 			}
-			setInterval(captureImage, 1000)
+
+			webSocketEmotion.onmessage = (event) => {
+				const msg = JSON.parse(event.data)
+				if (msg.event === '@ExpressionResult') {
+					emotion.value = msg.result ?? 'Neutral'
+				}
+			}
 		}
+		setWS()
 
-		webSocketEmotion.onmessage = (event) => {
-			const msg = JSON.parse(event.data)
-			if (msg.event === '@EmotionResult') {
-				emotion.value = msg.result ?? 'Neutral'
-			}
+		webSocketEmotion.onclose = () => {
+			webSocketEmotion = null
+			console.log('🤖 AI Server Emotion : Connection...')
+			webSocketEmotion = new WebSocket(EMOTION_AI_SERVER)
+			setWS()
 		}
 	}
 

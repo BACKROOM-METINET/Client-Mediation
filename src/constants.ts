@@ -1,4 +1,5 @@
-export const MEDIATION_BACK_SERVER = 'ws://localhost:3000'
+export const MEDIATION_BACK_SERVER = 'localhost:3000'
+export const MEDIATION_WS_SERVER = 'ws://' + MEDIATION_BACK_SERVER
 export const EMOTION_AI_SERVER = 'ws://localhost:8765'
 
 const MIXAMORIG = 'mixamorig:'

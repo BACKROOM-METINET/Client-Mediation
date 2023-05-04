@@ -9,11 +9,13 @@ import type {
 } from '@/client/types/events'
 import { useLowLevelClient } from '@/client/useLowLevelClient'
 import { useRoomStore } from '@/stores/room'
+import { useSettingStore } from '@/stores/setting'
 
 export function listenHighLevelClientEvents() {
 	const client = useLowLevelClient()
 
 	const roomStore = useRoomStore()
+	const settingStore = useSettingStore()
 	const router = useRouter()
 
 	client.on<RoomCreatedEvent>('@RoomCreated', async ({ room }) => {
@@ -50,6 +52,10 @@ export function listenHighLevelClientEvents() {
 		async ({ room, mediator }) => {
 			console.log(`Mediation start by ${mediator} in room "${room.name}"`)
 			roomStore.upsertRoom(room)
+			if (room.config && room.config.room_asset && room.config.skybox_asset) {
+				settingStore.setSceneRoom(room.config.room_asset)
+				settingStore.setSkybox(room.config.skybox_asset)
+			}
 			router.push({ name: 'mediation' })
 		}
 	)
