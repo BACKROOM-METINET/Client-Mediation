@@ -142,7 +142,11 @@ export const useSceneStore = defineStore('scene', () => {
 						tableRayon: tableRayon,
 					})
 				}
-				await meshesLoader.character(scene.value as Scene)
+				await meshesLoader.character(scene.value as Scene,  {
+					order: 1,
+					membersNumber: userCounter,
+					tableRayon: tableRayon,
+				})
 			}, 10000)
 
 			return sceneRef.value

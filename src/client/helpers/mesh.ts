@@ -15,7 +15,7 @@ import {
 import type { ChairConfig, Scene } from '@/client/types/business'
 import { MeshRoomEnum, type MeshRoomList } from '@/client/types/meshes'
 import { degToRad } from '@/client/utils/converter'
-import { DUMMY_KEY } from '@/constants'
+import { AVATAR_KEY, DUMMY_KEY } from '@/constants'
 import { getMaterial } from './materials'
 
 const DISTANCE_HELPERS = 1
@@ -266,7 +266,7 @@ export function loadMesh() {
 		)
 	}
 
-	const character = async (scene: Scene) => {
+	const character = async (scene: Scene, config: ChairConfig) => {
 		const doorPosition = scene.meshes
 			.find((mesh) => mesh.name === 'doorInterior_primitive2')
 			?.getAbsolutePosition()
@@ -313,39 +313,42 @@ export function loadMesh() {
 				Math.abs(BehindTablePos.z - avatar.getAbsolutePosition().z)
 			)
 
-			characterMovement(
+			applyCharacterWalk(
 				scene,
-				animationGroups[0],
 				avatar,
 				distTranslation1,
-				distTranslation2
+				distTranslation2,
+				animationGroups[0]
 			)
+
+	
 		}
+
+
 	}
 
-	const characterMovement = (
+	const applyCharacterWalk = (
 		scene: Scene,
-		animation: AnimationGroup,
 		avatar: AbstractMesh | Mesh,
 		distTranslation1: Vector3,
-		distTranslation2: Vector3
+		distTranslation2: Vector3,
+		animation: AnimationGroup
 	) => {
-		console.log('PASSAGE')
 
 		const translation1Keys: Array<{ frame: number; value: Vector3 }> = []
 		translation1Keys.push({ frame: 0, value: new Vector3(0, 0, 0) })
-		translation1Keys.push({ frame: 40, value: distTranslation1 })
+		translation1Keys.push({ frame: 20, value: distTranslation1 })
+		translation1Keys.push({ frame: 60, value: distTranslation1 })
+		translation1Keys.push({ frame: 100, value: distTranslation2 })
 
 		const rotationKeys: Array<{ frame: number; value: GLfloat }> = []
-		rotationKeys.push({ frame: 40, value: degToRad(90) })
+		rotationKeys.push({ frame: 0, value: degToRad(90) })
+		rotationKeys.push({ frame: 20, value: degToRad(90) })
 		rotationKeys.push({ frame: 60, value: degToRad(45) })
-
-		const translation2Keys: Array<{ frame: number; value: Vector3 }> = []
-		translation2Keys.push({ frame: 60, value: distTranslation1 })
-		translation2Keys.push({ frame: 100, value: distTranslation2 })
+		rotationKeys.push({ frame: 100, value: degToRad(45) })
 
 		const characterTranslation = new Animation(
-			'walkTranslation',
+			'characterTranslation',
 			'position',
 			30,
 			Animation.ANIMATIONTYPE_VECTOR3,
@@ -354,7 +357,7 @@ export function loadMesh() {
 		characterTranslation.setKeys(translation1Keys)
 
 		const characterRotation = new Animation(
-			'walkRotation',
+			'characterRotation',
 			'rotation.y',
 			30,
 			Animation.ANIMATIONTYPE_FLOAT,
@@ -362,35 +365,44 @@ export function loadMesh() {
 		)
 		characterRotation.setKeys(rotationKeys)
 
-		const characterTranslation2 = new Animation(
-			'walkTranslation',
-			'position',
-			30,
-			Animation.ANIMATIONTYPE_VECTOR3,
-			Animation.ANIMATIONLOOPMODE_CYCLE
-		)
-		characterTranslation2.setKeys(translation2Keys)
-
-		avatar.animations.push(characterTranslation)
-		avatar.animations.push(characterRotation)
-		avatar.animations.push(characterTranslation2)
+		avatar.animations.push(characterTranslation, characterRotation)
 
 		avatar.actionManager = new ActionManager(scene)
+
 		avatar.actionManager.registerAction(
 			new ExecuteCodeAction(ActionManager.OnPickTrigger, function () {
-				// TypeError ??
-
-				try {
-					animation.start()
-					scene.beginAnimation(avatar, 0, 100, false, undefined, () => {
-						console.log('FIN DE TRANSLATION')
-						animation.stop()
-					})
-				} catch (e) {
-					// do nothing
-				}
+				enableCharacterWalk(avatar, scene, animation)
 			})
 		)
+			
+
+
+	}
+
+	const enableCharacterWalk = (avatar: AbstractMesh, scene: Scene, animation: AnimationGroup) => {
+		// animation = walking from the model 
+		try {
+			animation.start()
+			scene.beginAnimation(avatar, 0, 100, false, undefined, () => {
+				animation.stop()
+				// avatar.position = new Vector3(
+				// 	(config.tableRayon + DISTANCE_HELPERS) *
+				// 		Math.cos(degToRad((360 / config.membersNumber) * config.order)),
+				// 	-1.4,
+				// 	(config.tableRayon + DISTANCE_HELPERS) *
+				// 		Math.sin(degToRad((360 / config.membersNumber) * config.order))
+				// )
+				// avatar.rotation = new Vector3(
+				// 	0,
+				// 	degToRad((-360 / config.membersNumber) * config.order - 90),
+				// 	0
+				// )
+			})
+		} catch (e) {
+			// do nothing
+		}
+
+		console.log(avatar);
 	}
 
 	return {
@@ -399,5 +411,8 @@ export function loadMesh() {
 		mediationRoom,
 		chairAroundTable,
 		character,
+		enableCharacterWalk
 	}
 }
+
+
