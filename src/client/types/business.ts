@@ -68,8 +68,8 @@ export interface AvatarData {
 	}
 }
 
-export interface AvatarEventInput extends AvatarData {
-	emotion: Emotion
+export interface AvatarEventInput extends Partial<AvatarData> {
+	emotion?: Emotion
 }
 
 export type Role = 'mediator' | 'lawyer' | 'user'

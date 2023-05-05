@@ -1,6 +1,7 @@
 import { defineStore } from 'pinia'
 import { ref, computed, type Ref, type ComputedRef, toRefs } from 'vue'
 import type {
+	AvatarData,
 	AvatarEventInput,
 	Participant,
 	ParticipantServer,
@@ -139,12 +140,16 @@ export const useRoomStore = defineStore('room', () => {
 	) {
 		const index = roomsRef.value.findIndex((_room) => _room.id === roomId)
 		if (index !== -1) {
-			const participant = roomsRef.value[index].participants.find(
+			const participantIndex = roomsRef.value[index].participants.findIndex(
 				(_p) => _p.name === username
 			)
-			if (!participant) return
-			participant.emotion = data.emotion
-			participant.avatar = data
+			if (participantIndex !== -1) {
+				const _p = roomsRef.value[index].participants[participantIndex]
+				if (!_p) return
+				if (data.emotion) _p.emotion = data.emotion
+				if (data.head && data.hands) _p.avatar = data as AvatarData
+				roomsRef.value[index].participants[participantIndex] = _p
+			}
 		}
 	}
 })
