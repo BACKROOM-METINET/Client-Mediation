@@ -3,6 +3,7 @@ import type { NormalizedLandmarkList } from '@mediapipe/holistic'
 import * as Comlink from 'comlink'
 import { Face } from 'kalidokit'
 import type {
+	AvatarData,
 	CameraData,
 	CloneableResults,
 	Coordinate,
@@ -36,6 +37,17 @@ export class Pose {
 		this.handRight = {
 			origin: { x: 0, y: 0, z: 0 },
 			points: [],
+		}
+	}
+	private getAvatarData(): AvatarData {
+		return {
+			head: {
+				rotation: this.camera.rotation,
+			},
+			hands: {
+				right: this.handRight,
+				left: this.handLeft,
+			},
 		}
 	}
 	private camPositionAverage(newNum: number, history: number[]): number {
@@ -99,12 +111,13 @@ export class Pose {
 			this.updateHandPoint(landmark, hand, index)
 		)
 	}
-	public process(results: CloneableResults) {
+	public process(results: CloneableResults): AvatarData | null {
 		this.cloneableInputResults = results
-		if (!this.cloneableInputResults) return
+		if (!this.cloneableInputResults) return null
 		this.updateCamera(this.cloneableInputResults)
 		this.updateHandLeft(this.cloneableInputResults, this.handLeft)
 		this.updateHandRight(this.cloneableInputResults, this.handRight)
+		return this.getAvatarData()
 	}
 }
 

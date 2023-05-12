@@ -12,7 +12,7 @@ import {
 	Space,
 	AnimationGroup,
 } from '@babylonjs/core'
-import type { ChairConfig, Scene } from '@/client/types/business'
+import type { AvatarConfig, ChairConfig, Scene } from '@/client/types/business'
 import { MeshRoomEnum, type MeshRoomList } from '@/client/types/meshes'
 import { degToRad } from '@/client/utils/converter'
 import { AVATAR_KEY, DUMMY_KEY } from '@/constants'
@@ -128,7 +128,7 @@ export function loadMesh() {
 		)
 	}
 
-	const dummyAvatarAroundTable = (scene: Scene, config: ChairConfig) => {
+	const dummyAvatarAroundTable = (scene: Scene, config: AvatarConfig) => {
 		SceneLoader.ImportMesh(
 			'',
 			MESHES_REPOSITORY,
@@ -164,7 +164,7 @@ export function loadMesh() {
 								bone.name === DUMMY_KEY.BONES.LEFT_LEG
 							)
 								bone.rotate(Axis.X, degToRad(90))
-							if (bone.name === DUMMY_KEY.BONES.NECK)
+							if (bone.name === DUMMY_KEY.BONES.NECK && config.isMe)
 								bone.rotate(Axis.X, degToRad(160))
 						})
 					}

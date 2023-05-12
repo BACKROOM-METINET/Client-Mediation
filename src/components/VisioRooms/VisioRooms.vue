@@ -5,7 +5,7 @@ import type { Room } from '@/client/types/business'
 import { useHighLevelClientEmits } from '@/composables/emits'
 import { useAuthStore } from '@/stores/auth'
 import { useRoomStore } from '@/stores/room'
-import AddRoom from '../AddRoom/AddRoom.vue'
+import AddRoom from '../VisioAddRoom/VisioAddRoom.vue'
 
 const clientEmits = useHighLevelClientEmits()
 
@@ -16,6 +16,7 @@ const { rooms, currentRoom } = toRefs(roomStore)
 const { user } = toRefs(authSore)
 
 async function joinRoom(room: Room) {
+	if (!user.value || currentRoom.value?.name === room.name) return
 	if (currentRoom.value) {
 		await clientEmits.leaveRoom(user.value.name, currentRoom.value.id)
 	}
@@ -44,4 +45,4 @@ async function joinRoom(room: Room) {
 	</div>
 </template>
 
-<style scoped src="./Rooms.scss"></style>
+<style scoped src="./VisioRooms.scss"></style>

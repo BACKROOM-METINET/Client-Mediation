@@ -20,7 +20,7 @@ async function createNewRoom() {
 		alert('please provide a room name')
 		return
 	}
-
+	if (!user.value) return
 	if (currentRoom.value) {
 		await clientEmits.leaveRoom(user.value.name, currentRoom.value.id)
 	}
@@ -47,4 +47,4 @@ async function createNewRoom() {
 	</div>
 </template>
 
-<style scoped src="./AddRoom.scss"></style>
+<style scoped src="./VisioAddRoom.scss"></style>

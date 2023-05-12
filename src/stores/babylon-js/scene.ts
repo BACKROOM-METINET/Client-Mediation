@@ -17,12 +17,15 @@ import type { MediationConfig } from '@/client/types/config'
 import type { SkyboxEnum } from '@/client/types/meshes'
 import { coordinateToVector3 } from '@/client/utils/converter'
 import type { Pose } from '@/client/workers/pose-processing'
+import { useRoomStore } from '../room'
 import { useCameraStore } from './camera'
 
 export const useSceneStore = defineStore('scene', () => {
 	// Stores
 	const cameraStore = useCameraStore()
+	const roomStore = useRoomStore()
 	const { cameraRef } = toRefs(cameraStore)
+	const { currentRoom } = toRefs(roomStore)
 
 	// Helpers
 	const materials = getMaterial()
@@ -34,14 +37,14 @@ export const useSceneStore = defineStore('scene', () => {
 	const scene: Ref<SceneType | null> = ref(null)
 	const avatar: Ref<Avatar | null> = ref(null)
 
-	const membersNumber: Ref<number> = ref(6)
-
 	// Getters
 
 	const sceneRef = computed(() => scene.value)
 	const avatarRef = computed(() => avatar.value)
 
-	const membersNumberRef = computed(() => scene.value)
+	const membersNumberRef = computed(
+		() => currentRoom.value?.participants.length ?? 0
+	)
 	const fpsCounter = computed(() => Math.round(engine.value?.getFps() ?? 0))
 
 	// Actions
@@ -123,23 +126,23 @@ export const useSceneStore = defineStore('scene', () => {
 			// Import Meshes
 			meshesLoader.mediationRoom(sceneRef.value as Scene, config.scene)
 
-			const tableRayon = createTable(membersNumber.value)
+			const tableRayon = createTable(membersNumberRef.value)
 
-			for (let i = 0; i < membersNumber.value; i++) {
+			for (let i = 0; i < membersNumberRef.value; i++) {
 				meshesLoader.chairAroundTable(sceneRef.value as Scene, {
 					order: i,
-					membersNumber: membersNumber.value,
+					membersNumber: membersNumberRef.value,
 					tableRayon: tableRayon,
 				})
 			}
 
 			setTimeout(async () => {
-				const userCounter = 3
-				for (let i = 0; i < userCounter; i++) {
+				for (let i = 0; i < membersNumberRef.value; i++) {
 					meshesLoader.dummyAvatarAroundTable(scene.value as Scene, {
 						order: i,
-						membersNumber: userCounter,
+						membersNumber: membersNumberRef.value,
 						tableRayon: tableRayon,
+						isMe: currentRoom.value?.participants[i].isMe ?? false,
 					})
 				}
 				await meshesLoader.character(scene.value as Scene)

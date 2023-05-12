@@ -9,18 +9,24 @@ import Twilio, {
 	RemoteVideoTrack,
 } from 'twilio-video'
 import { computed, type Ref, ref, toRefs } from 'vue'
+import { useRouter } from 'vue-router'
 import { emitter } from '@/client/events/event'
-import type { Participant } from '@/client/types/business'
 import { useHighLevelClientEmits } from '@/composables/emits'
+import { MEDIATION_BACK_SERVER } from '@/constants'
 import { useAuthStore } from '@/stores/auth'
 import { useRoomStore } from '@/stores/room'
+import { useSettingStore } from '@/stores/setting'
 
 const clientEmits = useHighLevelClientEmits()
 
 const roomStore = useRoomStore()
 const authSore = useAuthStore()
+const settingStore = useSettingStore()
 
-const { currentRoom } = toRefs(roomStore)
+const router = useRouter()
+
+const { sceneRoomRef, sceneSkyboxRef } = toRefs(settingStore)
+const { currentRoom, currentParticipant } = toRefs(roomStore)
 const { user } = toRefs(authSore)
 
 const props = defineProps(['username'])
@@ -30,21 +36,13 @@ const localTrack = ref(false)
 const activeRoom: Ref<Room | null> = ref(null)
 const roomName = ref(null)
 
-const isMediator = computed(() => {
-	if (!currentRoom.value) return
-	const mediatorParticipant = currentRoom.value.participants.find(
-		(participant: Participant) => participant.role === 'mediator'
-	)
-	if (!mediatorParticipant) return false
-
-	return mediatorParticipant.name === user.value.name
-})
+const isMediator = computed(() => currentParticipant.value?.role === 'mediator')
 
 created()
 
 async function getAccessToken() {
 	return await axios.get(
-		`http://localhost:3000/token?identity=${props.username}`
+		`http://${MEDIATION_BACK_SERVER}/token?identity=${props.username}`
 	)
 }
 
@@ -61,6 +59,18 @@ function attachTracks(
 	tracks.forEach((t: RemoteTrackPublication) => {
 		if (t.kind === 'video' && t.track) {
 			container.appendChild((t.track as RemoteVideoTrack).attach())
+
+			const htmlVideoElements = container.getElementsByTagName('video')
+
+			if (!htmlVideoElements) return
+
+			const htmlVideoElement = htmlVideoElements.item(
+				htmlVideoElements.length - 1
+			)
+
+			if (!htmlVideoElement) return
+
+			htmlVideoElement.style.height = '50%'
 		}
 	})
 }
@@ -75,7 +85,10 @@ function attachParticipantTracks(
 }
 
 // Detach the Tracks from the DOM.
-function detachTracks(tracks: RemoteTrackPublication[]) {
+function detachTracks(
+	tracks: RemoteTrackPublication[],
+	container: HTMLElement
+) {
 	tracks.forEach((t: RemoteTrackPublication) => {
 		if (t.kind === 'video' && t.track) {
 			;(t.track as RemoteVideoTrack)
@@ -84,31 +97,40 @@ function detachTracks(tracks: RemoteTrackPublication[]) {
 					detachedElement.remove()
 				})
 		}
+		while (container.firstChild) {
+			container.removeChild(container.firstChild)
+		}
 	})
 }
 
 // Detach the Participant's Tracks from the DOM.
-function detachParticipantTracks(participant: RemoteParticipant) {
+function detachParticipantTracks(
+	participant: RemoteParticipant,
+	container: HTMLElement
+) {
 	const tracks = Array.from(participant.tracks.values())
-	detachTracks(tracks)
-}
-
-// Leave Room.
-function leaveRoomIfJoined() {
-	if (activeRoom.value) {
-		activeRoom.value.disconnect()
-	}
+	detachTracks(tracks, container)
 }
 
 function leaveRoom() {
-	if (currentRoom.value) {
-		clientEmits.leaveRoom(user.value, currentRoom.value.id)
+	if (currentRoom.value && user.value) {
+		clientEmits.leaveRoom(user.value.name, currentRoom.value.id)
 		loading.value = false
 		roomName.value = null
+		emitter.emit('leave_room')
 	}
 }
 
-function startMeeting() {}
+function startMeeting() {
+	if (!currentRoom.value || !user.value) return
+	clientEmits.startMediation(user.value.name, currentRoom.value.id, {
+		skybox_asset: sceneSkyboxRef.value,
+		room_asset: sceneRoomRef.value,
+	})
+	router.push({
+		name: 'mediation',
+	})
+}
 
 function createChat(room_name: any) {
 	loading.value = true
@@ -129,7 +151,7 @@ function createChat(room_name: any) {
 		// remove any remote track when joining a new room
 		const remoteTrack = document.getElementById('remoteTrack')
 		if (!remoteTrack) return
-		remoteTrack.innerHTML = ''
+		// remoteTrack.innerHTML = ''
 
 		Twilio.connect(token, connectOptions).then(function (room: Room) {
 			// console.log('Successfully joined a Room: ', room);
@@ -153,6 +175,14 @@ function createChat(room_name: any) {
 			// When a Participant joins the Room, log the event.
 			room.on('participantConnected', (participant: RemoteParticipant) => {
 				dispatchLog("Joining: '" + participant.identity + "'")
+			})
+
+			// When a Participant leaves the Room, detach its Tracks.
+			room.on('participantDisconnected', (participant: RemoteParticipant) => {
+				dispatchLog("Participant '" + participant.identity + "' left the room")
+				const previewContainer = document.getElementById('remoteTrack')
+				if (!previewContainer) return
+				detachParticipantTracks(participant, previewContainer)
 			})
 
 			// When a Participant adds a Track, attach it to the DOM.
@@ -179,14 +209,14 @@ function createChat(room_name: any) {
 					participant: RemoteParticipant
 				) => {
 					dispatchLog(participant.identity + ' removed track: ' + track.kind)
-					detachTracks([publication])
+					const previewContainer = document.getElementById('remoteTrack')
+					if (!previewContainer) return
+					detachTracks([publication], previewContainer)
 				}
 			)
 
-			// When a Participant leaves the Room, detach its Tracks.
-			room.on('participantDisconnected', (participant: RemoteParticipant) => {
-				dispatchLog("Participant '" + participant.identity + "' left the room")
-				detachParticipantTracks(participant)
+			emitter.on('leave_room', () => {
+				room.disconnect()
 			})
 
 			// if local preview is not active, create it
@@ -197,14 +227,6 @@ function createChat(room_name: any) {
 					if (!localMediaContainer) return
 
 					localMediaContainer.appendChild(track.attach())
-
-					const htmlVideoElement = document
-						.getElementsByTagName('video')
-						.item(0)
-
-					if (!htmlVideoElement) return
-
-					htmlVideoElement.style.maxWidth = '100%'
 
 					localTrack.value = true
 				})
@@ -220,7 +242,7 @@ function created() {
 
 	// When a user is about to transition away from this page,
 	// disconnect from the room, if joined.
-	window.addEventListener('beforeunload', leaveRoomIfJoined)
+	// window.addEventListener('beforeunload', leaveRoomIfJoined)
 }
 </script>
 
@@ -231,9 +253,7 @@ function created() {
 			<span v-else-if="!loading && roomName">Connected to {{ roomName }}</span>
 			<span v-else>Select a room to get started</span>
 		</div>
-		<div class="row remote_video_container">
-			<div id="remoteTrack"></div>
-		</div>
+		<div id="remoteTrack"></div>
 		<div id="localTrack"></div>
 		<div v-if="currentRoom" class="video-buttons">
 			<button class="button-hide-logs btn btn-danger" @click="leaveRoom">
@@ -249,4 +269,4 @@ function created() {
 	</div>
 </template>
 
-<style scoped src="./Video.scss"></style>
+<style scoped src="./VisioVideo.scss"></style>
