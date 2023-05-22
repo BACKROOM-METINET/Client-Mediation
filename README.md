@@ -7,13 +7,15 @@
 - [twilio account](https://www.twilio.com/)
 - [Server project](https://github.com/Mediation3D/Server-Mediation)
 - (Optional) [Server Emotion project](https://github.com/Mediation3D/Server-Mediation)
+- [3D meshes]()
 
 ## Installation
 
 1. clone Github repository : `git clone https://github.com/Mediation3D/Client-Mediation.git`
 2. install npm dependency : `npm i` (if you use **yarn** : `yarn`)
 3. copy & rename **.env.template** into **.env**, then complete with your twilio API data
-4. start project (dev mode) : `npm run dev`
+4. unzip meshes folder and move files into [public/assets/meshes](public/assets/meshes)
+5. start project (dev mode) : `npm run dev`
 
 for more details look [Vue.js documentation](https://vuejs.org/guide/introduction.html)
 
