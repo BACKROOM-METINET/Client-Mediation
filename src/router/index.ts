@@ -11,8 +11,13 @@ const router = createRouter({
 			children: [
 				{
 					path: '/',
-					name: 'new-ui',
-					component: () => import('../components/NewUI/NewUI.vue'),
+					name: 'visio',
+					component: () => import('../components/Visio/Visio.vue'),
+				},
+				{
+					path: '/mediation',
+					name: 'mediation',
+					component: () => import('../components/Mediation/Mediation.vue'),
 				},
 			],
 		},

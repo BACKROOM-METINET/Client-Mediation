@@ -1,0 +1,40 @@
+.video-area {
+  width: 100%;
+}
+
+.room-title {
+  text-align: center;
+  padding: 4px;
+  color: #000000;
+  font-weight: bold;
+  height: 10%;
+}
+
+.zizi {
+  max-width: 100%;
+}
+
+.room-title span {
+  font-weight: bold;
+}
+
+.video-buttons {
+  position: absolute;
+  display: flex;
+  justify-content: space-around;
+  width: 100%;
+  bottom: 20px;
+}
+
+#localTrack {
+  height: 45%;
+  display: flex;
+  justify-content: center;
+}
+
+#remoteTrack {
+  gap: 10px;
+  height: 45%;
+  display: flex;
+  flex-wrap: wrap;
+}

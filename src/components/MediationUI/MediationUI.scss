@@ -1,0 +1,129 @@
+.mediation-ui {
+	position: absolute;
+	height: 100%;
+	width: 100%;
+
+	.ui-bottom-left {
+		display: flex;
+		flex-direction: row;
+		bottom: 20px;
+		left: 20px;
+		z-index: 99;
+
+		.cam {
+			height: 200px;
+			display: flex;
+		}
+
+		.aside-cam {
+			display: flex;
+			flex-direction: column;
+			align-items: center;
+			margin-top: auto;
+			margin-left: 10px;
+
+			img {
+				margin-block: 10px;
+			}
+
+			#btn-close-cam {
+				&:hover {
+					background-color: #ddd;
+				}
+			}
+
+			#btn-open-cam {
+				&:hover {
+					background-color: #ddd;
+				}
+			}
+		}
+	}
+
+	.over-item {
+		background-color: #fff;
+		border-radius: 10px;
+		border: none;
+		width: 40px;
+		height: 40px;
+		display: flex;
+		align-items: center;
+		justify-content: center;
+	}
+
+	.option-list {
+		top: 20px;
+		left: 20px;
+		z-index: 99;
+
+		ul {
+			list-style: none;
+			padding: 0;
+
+			li {
+				margin-bottom: 10px;
+			}
+		}
+	}
+
+    .participants-menu {
+        position: absolute;
+        z-index: 99;
+        top: 20px;
+        left: 72px;
+        background-color: #fff;
+        color: black;
+        border-radius: 10px;
+        border: none;
+        display: flex;
+        align-items: center;
+        justify-content: center;
+        flex-direction: column;
+
+        .menu-header {
+            font-weight: bold;
+            padding-inline: 10px;
+            padding-top: 10px;
+        }
+
+        hr {
+            background-color: gray;
+            margin-block: 10px;
+            width: 80%;
+        }
+
+        .menu-content {
+            width: calc(100% - 10px);
+            padding-bottom: 10px;
+            max-height: 200px;
+            overflow-y: auto;
+
+            .participant-data {
+                padding: 5px;
+                display: flex;
+                flex-direction: row;
+                justify-content: space-between;
+
+                .mediator {
+                    color: orangered;
+                    font-style: italic;
+                }
+
+                .lawyer {
+                    font-style: italic;
+                }
+
+                .me {
+                    font-weight: bold;
+                }
+            }
+        }
+    }
+
+	.fps-counter {
+		position: absolute;
+		z-index: 120;
+		bottom: 20px;
+		right: 20px;
+	}
+}
