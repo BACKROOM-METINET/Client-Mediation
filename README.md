@@ -7,7 +7,7 @@
 - [twilio account](https://www.twilio.com/)
 - [Server project](https://github.com/Mediation3D/Server-Mediation)
 - (Optional) [Server Emotion project](https://github.com/Mediation3D/Server-Mediation)
-- [3D meshes]()
+- [3D meshes](https://drive.google.com/file/d/11tRgB2jkTudVkEfinZLu5oJEuISuOiTa/view?usp=sharing)
 
 ## Installation
 
